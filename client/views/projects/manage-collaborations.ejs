@@ -1,0 +1,159 @@
+<%- include('../partials/header') %>
+
+<div class="min-h-screen bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
+    <div class="max-w-4xl mx-auto">
+        <div class="bg-white p-6 rounded-lg shadow-md">
+            <h2 class="text-2xl font-bold text-center mb-6">Manage Collaboration Requests</h2>
+            
+            <div class="space-y-4">
+                <% if (requests.length === 0) { %>
+                    <p class="text-center text-gray-500">No collaboration requests yet</p>
+                <% } else { %>
+                    <% requests.forEach(request => { %>
+                        <div class="bg-gray-50 p-6 rounded-lg border border-gray-200">
+                            <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
+                                <div class="flex-1">
+                                    <p class="text-lg font-semibold text-gray-900">
+                                        <%= request.collaboratorName %>
+                                    </p>
+                                    <p class="mt-2 flex items-center text-sm text-gray-600">
+                                        <span class="font-medium mr-2">Role:</span>
+                                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-indigo-100 text-indigo-800">
+                                            <%= request.role %>
+                                        </span>
+                                    </p>
+                                    <p class="mt-2 text-sm text-gray-600">
+                                        <%= request.message %>
+                                    </p>
+                                </div>
+                                <div class="flex flex-row items-center justify-end gap-3 mt-4 md:mt-0 min-w-[220px]">
+                                    <% if (request.status === 'pending') { %>
+                                        <button 
+                                            onclick="handleRequest(event, '<%= request.id %>', 'accept')" 
+                                            style="background-color: #059669; color: white; min-width: 100px; display: inline-block;"
+                                            class="relative inline-flex items-center justify-center px-4 py-2 text-base font-semibold rounded-md shadow-sm hover:bg-emerald-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-emerald-500 disabled:opacity-50 transition-colors duration-200"
+                                            type="button"
+                                        >
+                                            Accept
+                                        </button>
+                                        <button 
+                                            onclick="handleRequest(event, '<%= request.id %>', 'reject')" 
+                                            style="background-color: #dc2626; color: white; min-width: 100px; display: inline-block;"
+                                            class="relative inline-flex items-center justify-center px-4 py-2 text-base font-semibold rounded-md shadow-sm hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 disabled:opacity-50 transition-colors duration-200"
+                                            type="button"
+                                        >
+                                            Reject
+                                        </button>
+                                    <% } else { %>
+                                        <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium <%= request.status === 'accepted' ? 'bg-emerald-100 text-emerald-800' : 'bg-red-100 text-red-800' %>">
+                                            <%= request.status === 'accepted' ? 'Accepted' : 'Rejected' %>
+                                        </span>
+                                    <% } %>
+                                </div>
+                            </div>
+                        </div>
+                    <% }); %>
+                <% } %>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+/* Ensure buttons are always visible */
+button[onclick*="handleRequest"] {
+    opacity: 1 !important;
+    visibility: visible !important;
+    display: inline-flex !important;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    z-index: 10;
+}
+</style>
+
+<script>
+async function handleRequest(event, requestId, action) {
+    try {
+        // Show loading state
+        const button = event.target;
+        const originalText = button.textContent;
+        button.disabled = true;
+        button.textContent = action === 'accept' ? 'Accepting...' : 'Rejecting...';
+        button.style.opacity = '0.75';
+        button.style.cursor = 'not-allowed';
+
+        const response = await fetch(`/collaborations/request/${requestId}/${action}`, {
+            method: 'PUT',
+            headers: {
+                'Content-Type': 'application/json',
+                'Accept': 'application/json'
+            },
+            body: JSON.stringify({
+                projectId: '<%= project.id %>'
+            })
+        });
+
+        const data = await response.json();
+
+        if (!response.ok) {
+            throw new Error(data.error || 'Failed to handle request');
+        }
+
+        // Show success message
+        const messageDiv = document.createElement('div');
+        messageDiv.className = 'fixed top-4 right-4 bg-emerald-50 border-l-4 border-emerald-400 p-4 z-50 rounded shadow-lg';
+        messageDiv.innerHTML = `
+            <div class="flex">
+                <div class="flex-shrink-0">
+                    <svg class="h-5 w-5 text-emerald-400" fill="currentColor" viewBox="0 0 20 20">
+                        <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" />
+                    </svg>
+                </div>
+                <div class="ml-3">
+                    <p class="text-sm text-emerald-700 font-medium">Request ${action === 'accept' ? 'accepted' : 'rejected'} successfully</p>
+                </div>
+            </div>
+        `;
+        document.body.appendChild(messageDiv);
+        
+        // Remove message and refresh page after 2 seconds
+        setTimeout(() => {
+            messageDiv.remove();
+            window.location.reload();
+        }, 2000);
+    } catch (error) {
+        console.error('Error:', error);
+        
+        // Reset button state
+        button.disabled = false;
+        button.textContent = originalText;
+        button.style.opacity = '1';
+        button.style.cursor = 'pointer';
+
+        // Show error message
+        const messageDiv = document.createElement('div');
+        messageDiv.className = 'fixed top-4 right-4 bg-red-50 border-l-4 border-red-400 p-4 z-50 rounded shadow-lg';
+        messageDiv.innerHTML = `
+            <div class="flex">
+                <div class="flex-shrink-0">
+                    <svg class="h-5 w-5 text-red-400" fill="currentColor" viewBox="0 0 20 20">
+                        <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd" />
+                    </svg>
+                </div>
+                <div class="ml-3">
+                    <p class="text-sm text-red-700 font-medium">${error.message}</p>
+                </div>
+            </div>
+        `;
+        document.body.appendChild(messageDiv);
+        
+        // Remove error message after 3 seconds
+        setTimeout(() => {
+            messageDiv.remove();
+        }, 3000);
+    }
+}
+</script>
+
+<%- include('../partials/footer') %>

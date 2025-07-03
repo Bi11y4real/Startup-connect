@@ -1,0 +1,127 @@
+<%- include('../partials/header') %>
+
+
+<div class="min-h-screen bg-gray-50 py-8 px-4">
+    <div class="max-w-4xl mx-auto">
+        <div class="bg-white shadow overflow-hidden sm:rounded-lg">
+            <div class="px-4 py-5 sm:px-6 border-b border-gray-200">
+                <h1 class="text-2xl font-semibold text-gray-900">Edit Project</h1>
+                <p class="mt-1 text-sm text-gray-500">Update your project details below.</p>
+            </div>
+
+            <form action="/projects/<%= project.id %>/edit" method="POST" class="space-y-6 px-4 py-5 sm:p-6" enctype="multipart/form-data">
+                <!-- Title -->
+                <div>
+                    <label for="title" class="block text-sm font-medium text-gray-700">Project Title</label>
+                    <input type="text" name="title" id="title" value="<%= project.title %>" required
+                        class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm">
+                </div>
+
+                <!-- Description -->
+                <div>
+                    <label for="description" class="block text-sm font-medium text-gray-700">Description</label>
+                    <textarea id="description" name="description" rows="4" required
+                        class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"><%= project.description %></textarea>
+                </div>
+
+                <!-- Industry -->
+                <div>
+                    <label for="industry" class="block text-sm font-medium text-gray-700">Industry</label>
+                    <select id="industry" name="industry" required
+                        class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm">
+                        <option value="" disabled>Select an industry</option>
+                        <option value="Technology" <%= project.industry === 'Technology' ? 'selected' : '' %>>Technology</option>
+                        <option value="Healthcare" <%= project.industry === 'Healthcare' ? 'selected' : '' %>>Healthcare</option>
+                        <option value="Finance" <%= project.industry === 'Finance' ? 'selected' : '' %>>Finance</option>
+                        <option value="Education" <%= project.industry === 'Education' ? 'selected' : '' %>>Education</option>
+                        <option value="E-commerce" <%= project.industry === 'E-commerce' ? 'selected' : '' %>>E-commerce</option>
+                        <option value="Other" <%= project.industry === 'Other' ? 'selected' : '' %>>Other</option>
+                    </select>
+                </div>
+
+                <!-- Status -->
+                <div>
+                    <label for="status" class="block text-sm font-medium text-gray-700">Project Status</label>
+                    <select id="status" name="status" required
+                        class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm">
+                        <option value="Idea" <%= project.status === 'Idea' ? 'selected' : '' %>>Idea Stage</option>
+                        <option value="Development" <%= project.status === 'Development' ? 'selected' : '' %>>In Development</option>
+                        <option value="Beta" <%= project.status === 'Beta' ? 'selected' : '' %>>Beta Testing</option>
+                        <option value="Launched" <%= project.status === 'Launched' ? 'selected' : '' %>>Launched</option>
+                    </select>
+                </div>
+
+                <!-- Funding Goal -->
+                <div>
+                    <label for="fundingGoal" class="block text-sm font-medium text-gray-700">Funding Goal (Kshs)</label>
+                    <input type="number" name="fundingGoal" id="fundingGoal" min="0" step="0.01" value="<%= project.fundingGoal %>" required
+                        class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm">
+                </div>
+
+                <!-- Current Funding -->
+                <div>
+                    <label for="currentFunding" class="block text-sm font-medium text-gray-700">Current Funding (Kshs)</label>
+                    <input type="number" name="currentFunding" id="currentFunding" min="0" step="0.01" value="<%= project.currentFunding || 0 %>"
+                        class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm">
+                </div>
+
+                <!-- Image Upload -->
+                <div>
+                    <label class="block text-sm font-medium text-gray-700">Project Image</label>
+                    <% if (project.imageUrl) { %>
+                        <div class="mt-2">
+                            <img src="<%= project.imageUrl %>" alt="<%= project.title %>" class="h-32 w-auto object-cover rounded">
+                        </div>
+                    <% } %>
+                    <div class="mt-2 flex items-center">
+                        <input type="file" name="image" id="image" accept="image/*"
+                            class="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100">
+                    </div>
+                </div>
+
+                <!-- Skills Needed -->
+                <div>
+                    <label for="skillsNeeded" class="block text-sm font-medium text-gray-700">Skills Needed (comma separated)</label>
+                    <input type="text" name="skillsNeeded" id="skillsNeeded" 
+                        value="<%= project.skillsNeeded ? project.skillsNeeded.join(', ') : '' %>"
+                        class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                        placeholder="e.g., Web Development, UI/UX Design, Marketing">
+                </div>
+
+                <div class="flex justify-end space-x-3">
+                    <a href="/projects/<%= project.id %>" 
+                        class="bg-white py-2 px-4 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+                        Cancel
+                    </a>
+                    <button type="submit"
+                        class="inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+                        Update Project
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Add any client-side validation or functionality here
+    const form = document.querySelector('form');
+    if (form) {
+        form.addEventListener('submit', function(e) {
+            // Basic form validation
+            const title = document.getElementById('title').value.trim();
+            const description = document.getElementById('description').value.trim();
+            
+            if (!title || !description) {
+                e.preventDefault();
+                alert('Please fill in all required fields');
+                return false;
+            }
+            return true;
+        });
+    }
+});
+</script>
+
+<%- include('../partials/footer') %>

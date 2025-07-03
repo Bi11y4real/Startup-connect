@@ -1,0 +1,182 @@
+<%- include('../partials/header') %>
+
+<main class="flex-grow py-6">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <!-- Page Header -->
+        <div class="mb-8">
+            <div class="flex items-center justify-between">
+                <div>
+                    <h1 class="text-2xl font-bold text-gray-900">Explore Projects</h1>
+                    <p class="mt-1 text-sm text-gray-500">Discover innovative projects and opportunities</p>
+                </div>
+                <% if (locals.user && user.role === 'founder') { %>
+                    <a href="/projects/new" class="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-primary hover:bg-primary-dark focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary">
+                        <svg class="-ml-1 mr-2 h-5 w-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+                        </svg>
+                        New Project
+                    </a>
+                <% } %>
+            </div>
+        </div>
+
+        <!-- Filters -->
+        <div class="bg-white shadow rounded-lg mb-8">
+            <div class="px-4 py-5 sm:p-6">
+                <form action="/projects" method="GET" class="grid grid-cols-1 gap-4 sm:grid-cols-3">
+                    <div>
+                        <label for="industry" class="block text-sm font-medium text-gray-700">Industry</label>
+                        <select id="industry" name="industry" class="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-primary focus:border-primary sm:text-sm rounded-md">
+                            <option value="">All Industries</option>
+                            <option value="Technology" <%= filters.industry === 'Technology' ? 'selected' : '' %>>Technology</option>
+                            <option value="Healthcare" <%= filters.industry === 'Healthcare' ? 'selected' : '' %>>Healthcare</option>
+                            <option value="Finance" <%= filters.industry === 'Finance' ? 'selected' : '' %>>Finance</option>
+                            <option value="Education" <%= filters.industry === 'Education' ? 'selected' : '' %>>Education</option>
+                            <option value="E-commerce" <%= filters.industry === 'E-commerce' ? 'selected' : '' %>>E-commerce</option>
+                            <option value="Sustainability" <%= filters.industry === 'Sustainability' ? 'selected' : '' %>>Sustainability</option>
+                            <option value="Other" <%= filters.industry === 'Other' ? 'selected' : '' %>>Other</option>
+                        </select>
+                    </div>
+
+                    <div>
+                        <label for="status" class="block text-sm font-medium text-gray-700">Status</label>
+                        <select id="status" name="status" class="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-primary focus:border-primary sm:text-sm rounded-md">
+                            <option value="">All Status</option>
+                            <option value="active" <%= filters.status === 'active' ? 'selected' : '' %>>Active</option>
+                            <option value="completed" <%= filters.status === 'completed' ? 'selected' : '' %>>Completed</option>
+                        </select>
+                    </div>
+
+                    <div>
+                        <label for="search" class="block text-sm font-medium text-gray-700">Search</label>
+                        <div class="mt-1 relative rounded-md shadow-sm">
+                            <input type="text" name="search" id="search" 
+                                   class="focus:ring-primary focus:border-primary block w-full pr-10 sm:text-sm border-gray-300 rounded-md" 
+                                   placeholder="Search projects..."
+                                   value="<%= filters.search || '' %>">
+                            <div class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
+                                <svg class="h-5 w-5 text-gray-400" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                                </svg>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="sm:col-span-3 flex justify-end">
+                        <button type="submit" class="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-primary hover:bg-primary-dark focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary">
+                            Apply Filters
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- Projects Grid -->
+        <div class="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
+            <% if (projects && projects.length > 0) { %>
+                <% projects.forEach(project => { %>
+                    <div class="bg-white overflow-hidden shadow rounded-lg flex flex-col">
+                        <% if (project.imageUrl) { %>
+                            <div class="h-48 w-full">
+                                <img src="<%= project.imageUrl %>" alt="<%= project.title %>" class="h-full w-full object-cover">
+                            </div>
+                        <% } else { %>
+                            <div class="h-48 bg-gray-100 flex items-center justify-center">
+                                <svg class="h-12 w-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                                </svg>
+                            </div>
+                        <% } %>
+
+                        <div class="p-6 flex-grow">
+                            <div class="flex items-start justify-between">
+                                <div>
+                                    <h3 class="text-lg font-medium text-gray-900">
+                                        <a href="/projects/<%= project.id %>" class="hover:text-primary">
+                                            <%= project.title %>
+                                        </a>
+                                    </h3>
+                                    <p class="mt-1 text-sm text-gray-500"><%= project.industry %></p>
+                                </div>
+                                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium
+                                    <%= project.status === 'active' ? 'bg-green-100 text-green-800' : 
+                                        project.status === 'completed' ? 'bg-blue-100 text-blue-800' : 
+                                        'bg-gray-100 text-gray-800' %>">
+                                    <%= project.status.charAt(0).toUpperCase() + project.status.slice(1) %>
+                                </span>
+                            </div>
+
+                            <p class="mt-3 text-sm text-gray-500 line-clamp-3"><%= project.description %></p>
+
+                            <div class="mt-6">
+                                <div class="flex items-center">
+                                    <div class="flex-shrink-0">
+                                        <svg class="h-5 w-5 text-gray-400" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                        </svg>
+                                    </div>
+                                    <div class="ml-2 flex-1">
+                                        <p class="text-sm text-gray-500">Kshs<%= project.fundingRaised.toLocaleString() %> raised</p>
+                                        <% if (project.fundingGoal) { %>
+                                            <div class="mt-1 relative pt-1">
+                                                <div class="overflow-hidden h-2 text-xs flex rounded bg-gray-100">
+                                                    <div style="width:<%= (project.fundingRaised / project.fundingGoal * 100).toFixed(0) %>%" 
+                                                         class="shadow-none flex flex-col text-center whitespace-nowrap text-white justify-center bg-primary">
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        <% } %>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="bg-gray-50 px-6 py-4">
+                            <div class="flex items-center justify-between">
+                                <div class="flex items-center">
+                                    <svg class="h-5 w-5 text-gray-400" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
+                                    </svg>
+                                    <span class="ml-2 text-sm text-gray-500"><%= (project.collaborators || []).length %> collaborators</span>
+                                </div>
+                                <div class="text-sm text-gray-500">
+                                    <%= project.createdAt ? new Date(project.createdAt).toLocaleDateString('en-US', { 
+                                        year: 'numeric', 
+                                        month: 'short', 
+                                        day: 'numeric' 
+                                    }) : 'Date not available' %>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                <% }); %>
+            <% } else { %>
+                <div class="sm:col-span-3">
+                    <div class="text-center py-12 bg-white rounded-lg shadow">
+                        <svg class="mx-auto h-12 w-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"></path>
+                        </svg>
+                        <h3 class="mt-2 text-sm font-medium text-gray-900">No projects found</h3>
+                        <p class="mt-1 text-sm text-gray-500">
+                            <%= filters.search || filters.industry || filters.status ? 
+                                'Try adjusting your filters' : 
+                                'Get started by exploring available projects' %>
+                        </p>
+                        <% if (locals.user && user.role === 'founder') { %>
+                            <div class="mt-6">
+                                <a href="/projects/new" class="inline-flex items-center px-4 py-2 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-primary hover:bg-primary-dark focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary">
+                                    <svg class="-ml-1 mr-2 h-5 w-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+                                    </svg>
+                                    Create New Project
+                                </a>
+                            </div>
+                        <% } %>
+                    </div>
+                </div>
+            <% } %>
+        </div>
+    </div>
+</main>
+
+<%- include('../partials/footer') %> 

@@ -1,0 +1,303 @@
+<%- include('partials/header') %>
+
+<main class="flex-grow py-12 bg-gray-50">
+    <div class="container mx-auto px-4">
+        <div class="max-w-4xl mx-auto">
+            <!-- Project Header -->
+            <div class="bg-white rounded-lg shadow-sm p-8 mb-8">
+                <div class="flex flex-col md:flex-row md:items-center justify-between mb-6 gap-4">
+                    <h1 class="text-3xl font-bold text-gray-900"><%= project.title %></h1>
+                    <span class="inline-flex items-center px-4 py-2 text-sm font-medium bg-indigo-100 text-indigo-800 rounded-full">
+                        <%= project.industry %>
+                    </span>
+                </div>
+
+                <% if (project.imageUrl) { %>
+                    <img src="<%= project.imageUrl %>" alt="<%= project.title %>" class="w-full h-64 object-cover rounded-lg mb-6">
+                <% } %>
+
+                <!-- Project Details -->
+                <div class="space-y-6">
+                    <div>
+                        <h3 class="text-xl font-semibold text-gray-900 mb-2">About the Project</h3>
+                        <p class="text-gray-600"><%= project.description %></p>
+                    </div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <% if (project.timeline) { %>
+                            <div>
+                                <h4 class="text-sm font-medium text-gray-500">Timeline</h4>
+                                <p class="mt-1 text-base text-gray-900"><%= project.timeline %></p>
+                            </div>
+                        <% } %>
+                        
+                        <% if (project.location) { %>
+                            <div>
+                                <h4 class="text-sm font-medium text-gray-500">Location</h4>
+                                <p class="mt-1 text-base text-gray-900"><%= project.location %></p>
+                            </div>
+                        <% } %>
+
+                        <% if (project.website) { %>
+                            <div>
+                                <h4 class="text-sm font-medium text-gray-500">Website</h4>
+                                <a href="<%= project.website %>" target="_blank" rel="noopener noreferrer" 
+                                   class="mt-1 text-base text-indigo-600 hover:text-indigo-500">
+                                    <%= project.website %>
+                                </a>
+                            </div>
+                        <% } %>
+                    </div>
+
+                    <% if (project.pitch) { %>
+                        <div>
+                            <h4 class="text-sm font-medium text-gray-500 mb-2">Pitch</h4>
+                            <div class="bg-gray-50 rounded-lg p-4">
+                                <p class="text-gray-700"><%= project.pitch %></p>
+                            </div>
+                        </div>
+                    <% } %>
+                </div>
+
+                <!-- Project Actions -->
+                <div class="mt-6 flex justify-end">
+                    <% if (isOwner) { %>
+                        <a href="/projects/<%= project.id %>/manage-collaborations" 
+                           class="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-primary hover:bg-primary-dark focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary">
+                            Manage Collaboration Requests
+                            <% if (collaborationRequests && collaborationRequests.length > 0) { %>
+                                <span class="ml-2 px-2 py-0.5 text-xs bg-white text-primary rounded-full">
+                                    <%= collaborationRequests.length %>
+                                </span>
+                            <% } %>
+                        </a>
+                    <% } %>
+                </div>
+            </div>
+
+            <!-- Project Stats -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-8 mb-8">
+                <!-- Funding Progress -->
+                <% if (project.fundingGoal) { %>
+                    <div class="bg-white rounded-lg shadow-sm p-8">
+                        <h2 class="text-xl font-semibold text-gray-900 mb-4">Funding Progress</h2>
+                        <div class="flex items-end justify-between mb-2">
+                            <div>
+                                <p class="text-sm text-gray-500">Raised</p>
+                                <p class="text-2xl font-bold text-gray-900">Kshs <%= project.fundingRaised.toLocaleString() %></p>
+                            </div>
+                            <div class="text-right">
+                                <p class="text-sm text-gray-500">Goal</p>
+                                <p class="text-2xl font-bold text-gray-900">Kshs <%= project.fundingGoal.toLocaleString() %></p>
+                            </div>
+                        </div>
+                        <% const progressWidth = Math.min((project.fundingRaised / project.fundingGoal * 100), 100).toFixed(1); %>
+                        <div class="w-full h-3 bg-gray-200 rounded-full">
+                            <div class="h-full bg-primary rounded-full transition-all duration-500" 
+                                 style="width: <%= progressWidth %>%">
+                            </div>
+                        </div>
+                        <p class="text-sm text-gray-500 mt-2">
+                            <%= progressWidth %>% of goal reached
+                        </p>
+
+                        <!-- Investment Form for Investors -->
+                        <% if (locals.user && locals.user.role === 'investor' && project.fundingRaised < project.fundingGoal) { %>
+                            <div class="mt-6 pt-6 border-t border-gray-200">
+                                <h3 class="text-lg font-medium text-gray-900 mb-4">Invest in this Project</h3>
+                                <form id="investmentForm" class="space-y-4">
+                                    <div>
+                                        <label for="amount" class="block text-sm font-medium text-gray-700 mb-2">
+                                            Investment Amount
+                                        </label>
+                                        <div class="mt-1 relative rounded-md shadow-sm">
+                                            <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                                <span class="text-gray-500 sm:text-sm">Kshs</span>
+                                            </div>
+                                            <input type="number" 
+                                                   name="amount" 
+                                                   id="amount" 
+                                                   step="100"
+                                                   required
+                                                   class="focus:ring-primary focus:border-primary block w-full pl-16 pr-4 sm:text-sm border-gray-300 rounded-md"
+                                                   placeholder="">
+                                        </div>
+                                    </div>
+
+                                    <div class="flex items-center justify-between">
+                                        <p class="text-sm text-gray-500">
+                                            Available for funding: 
+                                            <span class="font-medium text-gray-900">
+                                                Kshs <%= (project.fundingGoal - project.fundingRaised).toLocaleString() %>
+                                            </span>
+                                        </p>
+                                        <button type="submit"
+                                                class="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-primary hover:bg-primary-dark focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary">
+                                            Invest Now
+                                        </button>
+                                    </div>
+
+                                    <div id="investmentMessage" class="hidden mt-3"></div>
+                                </form>
+                            </div>
+                        <% } %>
+                    </div>
+                <% } %>
+
+                <!-- Team Stats -->
+                <div class="bg-white rounded-lg shadow-sm p-8">
+                    <h2 class="text-xl font-semibold text-gray-900 mb-4">Team</h2>
+                    <div class="space-y-2">
+                        <div class="flex justify-between items-center">
+                            <span class="text-gray-600">Collaborators</span>
+                            <span class="font-medium text-gray-900"><%= project.collaborators?.length || 0 %></span>
+                        </div>
+                        <div class="flex justify-between items-center">
+                            <span class="text-gray-600">Investors</span>
+                            <span class="font-medium text-gray-900"><%= project.investors?.length || 0 %></span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Founder Information -->
+            <div class="bg-white rounded-lg shadow-sm p-8 mb-8">
+                <h2 class="text-xl font-semibold text-gray-900 mb-4">Project Founder</h2>
+                <div class="flex items-center">
+                    <img src="<%= project.founderAvatar || 'https://ui-avatars.com/api/?name=' + encodeURIComponent(project.founderName) %>" 
+                         alt="<%= project.founderName %>" 
+                         class="w-16 h-16 rounded-full mr-4">
+                    <div>
+                        <h3 class="text-lg font-medium text-gray-900"><%= project.founderName %></h3>
+                        <p class="text-gray-500">Project Founder</p>
+                        <% if (project.founderBio) { %>
+                            <p class="mt-2 text-sm text-gray-600"><%= project.founderBio %></p>
+                        <% } %>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Investors Section -->
+            <% if (project.investors && project.investors.length > 0) { %>
+                <div class="bg-white rounded-lg shadow-sm p-8 mb-8">
+                    <h2 class="text-xl font-semibold text-gray-900 mb-4">Project Investors</h2>
+                    <div class="space-y-4">
+                        <% project.investors.forEach(investor => { %>
+                            <div class="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
+                                <div class="flex items-center">
+                                    <img src="<%= investor.avatar || 'https://ui-avatars.com/api/?name=' + encodeURIComponent(investor.name) %>" 
+                                         alt="<%= investor.name %>" 
+                                         class="w-12 h-12 rounded-full mr-4">
+                                    <div>
+                                        <h3 class="text-base font-medium text-gray-900"><%= investor.name %></h3>
+                                        <p class="text-sm text-gray-500">Invested: Kshs <%= investor.amount?.toLocaleString() || 'Undisclosed' %></p>
+                                    </div>
+                                </div>
+                                <% if (investor.joinedAt) { %>
+                                    <span class="text-sm text-gray-500">
+                                        Joined <%= new Date(investor.joinedAt).toLocaleDateString() %>
+                                    </span>
+                                <% } %>
+                            </div>
+                        <% }); %>
+                    </div>
+                </div>
+            <% } %>
+
+            <!-- Skills Required -->
+            <% if (project.skills && project.skills.length > 0) { %>
+                <div class="bg-white rounded-lg shadow-sm p-8 mb-8">
+                    <h2 class="text-xl font-semibold text-gray-900 mb-4">Skills Required</h2>
+                    <div class="flex flex-wrap gap-2">
+                        <% project.skills.forEach(skill => { %>
+                            <span class="px-3 py-1 text-sm bg-gray-100 text-gray-600 rounded-full">
+                                <%= skill %>
+                            </span>
+                        <% }); %>
+                    </div>
+                </div>
+            <% } %>
+
+            <!-- Collaboration Section -->
+            <% if (locals.user && locals.user.role === 'collaborator' && !project.collaborators?.some(c => c.userId === user.id) && project.founderId !== user.id) { %>
+                <div class="bg-white rounded-lg shadow-sm p-8 mb-8">
+                    <h2 class="text-xl font-semibold text-gray-900 mb-4">Collaborate on this Project</h2>
+                    
+                    <% if (locals.collaborationRequest) { %>
+                        <div class="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-4">
+                            <p class="text-blue-700">
+                                <span class="font-medium">Request Pending:</span> 
+                                You have already sent a collaboration request for this project. The founder will review your request soon.
+                            </p>
+                        </div>
+                    <% } else { %>
+                        <form action="/projects/<%= project.id %>/collaborate" method="POST" class="space-y-4">
+                            <div>
+                                <label for="role" class="block text-sm font-medium text-gray-700 mb-1">
+                                    What role would you like to take?
+                                </label>
+                                <select id="role" name="role" required
+                                        class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-primary focus:border-primary">
+                                    <option value="">Select a role</option>
+                                    <option value="developer">Developer</option>
+                                    <option value="designer">Designer</option>
+                                    <option value="marketing">Marketing</option>
+                                    <option value="business">Business Development</option>
+                                    <option value="other">Other</option>
+                                </select>
+                            </div>
+
+                            <div>
+                                <label for="message" class="block text-sm font-medium text-gray-700 mb-1">
+                                    Why would you like to collaborate? (Message to the founder)
+                                </label>
+                                <textarea id="message" name="message" rows="4" required
+                                          class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-primary focus:border-primary"
+                                          placeholder="Describe your interest in the project and what you can bring to the team..."></textarea>
+                            </div>
+
+                            <div class="flex justify-end">
+                                <button type="submit" 
+                                        class="px-4 py-2 bg-primary text-white rounded-md hover:bg-primary-dark focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary">
+                                    Send Collaboration Request
+                                </button>
+                            </div>
+                        </form>
+                    <% } %>
+                </div>
+            <% } %>
+
+            <!-- Collaboration Requests Preview (for founders) -->
+            <% if (isOwner && collaborationRequests && collaborationRequests.length > 0) { %>
+                <div class="bg-white rounded-lg shadow-sm p-8">
+                    <div class="flex items-center justify-between mb-6">
+                        <h2 class="text-xl font-semibold text-gray-900">Recent Collaboration Requests</h2>
+                        <a href="/projects/<%= project.id %>/manage-collaborations" 
+                           class="text-sm text-primary hover:text-primary-dark">
+                            View All Requests
+                        </a>
+                    </div>
+                    
+                    <div class="space-y-4">
+                        <% collaborationRequests.slice(0, 3).forEach(request => { %>
+                            <div class="flex items-start justify-between p-4 bg-gray-50 rounded-lg">
+                                <div>
+                                    <p class="font-medium text-gray-900"><%= request.collaboratorName %></p>
+                                    <p class="text-sm text-gray-500">Role: <%= request.role %></p>
+                                    <p class="mt-1 text-sm text-gray-600"><%= request.message %></p>
+                                </div>
+                                <div class="ml-4">
+                                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800">
+                                        Pending
+                                    </span>
+                                </div>
+                            </div>
+                        <% }); %>
+                    </div>
+                </div>
+            <% } %>
+        </div>
+    </div>
+</main>
+
+<%- include('partials/footer') %> 

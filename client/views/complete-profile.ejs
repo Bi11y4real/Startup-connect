@@ -1,0 +1,185 @@
+<%- include('partials/header') %>
+
+<main class="flex-grow flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8 bg-gray-50">
+    <div class="max-w-md w-full space-y-8">
+        <div>
+            <h2 class="mt-6 text-center text-3xl font-extrabold text-gray-900">
+                Complete Your Profile
+            </h2>
+            <p class="mt-2 text-center text-sm text-gray-600">
+                Choose your role and provide additional information
+            </p>
+        </div>
+
+        <% if (locals.error) { %>
+        <div class="rounded-md bg-red-50 p-4">
+            <div class="flex">
+                <div class="flex-shrink-0">
+                    <svg class="h-5 w-5 text-red-400" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+                        <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd" />
+                    </svg>
+                </div>
+                <div class="ml-3">
+                    <p class="text-sm font-medium text-red-800">
+                        <%= error %>
+                    </p>
+                </div>
+            </div>
+        </div>
+        <% } %>
+
+        <!-- Error message div -->
+        <div id="error-message" class="hidden rounded-md bg-red-50 p-4">
+            <div class="text-sm text-red-700"></div>
+        </div>
+
+        <form id="completeProfileForm" class="mt-8 space-y-6" action="/auth/complete-profile" method="POST">
+            <div class="rounded-md shadow-sm space-y-4">
+                <div>
+                    <label for="role" class="block text-sm font-medium text-gray-700">I am a...</label>
+                    <select id="role" name="role" required
+                            class="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-blue-600 focus:border-blue-600 sm:text-sm rounded-md"
+                            onchange="showRoleFields(this.value)">
+                        <option value="">Select your role</option>
+                        <option value="founder">Startup Founder</option>
+                        <option value="collaborator">Collaborator</option>
+                        <option value="investor">Investor</option>
+                    </select>
+                </div>
+
+                <!-- Founder Fields -->
+                <div id="founder-fields" class="hidden space-y-4">
+                    <div>
+                        <label for="company" class="block text-sm font-medium text-gray-700">Company Name</label>
+                        <input type="text" id="company" name="company"
+                               class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-600 focus:border-blue-600 sm:text-sm">
+                    </div>
+                    <div>
+                        <label for="industry" class="block text-sm font-medium text-gray-700">Industry</label>
+                        <input type="text" id="industry" name="industry"
+                               class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-600 focus:border-blue-600 sm:text-sm">
+                    </div>
+                    <div>
+                        <label for="description" class="block text-sm font-medium text-gray-700">Company Description</label>
+                        <textarea id="description" name="description" rows="3"
+                                  class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-600 focus:border-blue-600 sm:text-sm"></textarea>
+                    </div>
+                </div>
+
+                <!-- Collaborator Fields -->
+                <div id="collaborator-fields" class="hidden space-y-4">
+                    <div>
+                        <label for="skills" class="block text-sm font-medium text-gray-700">Skills (comma-separated)</label>
+                        <input type="text" id="skills" name="skills"
+                               class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-600 focus:border-blue-600 sm:text-sm"
+                               placeholder="e.g. JavaScript, React, Node.js">
+                    </div>
+                    <div>
+                        <label for="experience" class="block text-sm font-medium text-gray-700">Years of Experience</label>
+                        <input type="number" id="experience" name="experience" min="0" max="50"
+                               class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-600 focus:border-blue-600 sm:text-sm">
+                    </div>
+                </div>
+
+                <!-- Investor Fields -->
+                <div id="investor-fields" class="hidden space-y-4">
+                    <div>
+                        <label for="investmentRange" class="block text-sm font-medium text-gray-700">Investment Range</label>
+                        <select id="investmentRange" name="investmentRange"
+                                class="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-blue-600 focus:border-blue-600 sm:text-sm rounded-md">
+                            <option value="seed">Seed ($10K - $100K)</option>
+                            <option value="angel">Angel ($100K - $500K)</option>
+                            <option value="series-a">Series A ($500K - $2M)</option>
+                            <option value="series-b">Series B ($2M+)</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label for="interests" class="block text-sm font-medium text-gray-700">Investment Interests (comma-separated)</label>
+                        <input type="text" id="interests" name="interests"
+                               class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-600 focus:border-blue-600 sm:text-sm"
+                               placeholder="e.g. SaaS, Fintech, AI/ML">
+                    </div>
+                </div>
+            </div>
+
+            <div>
+                <button type="submit"
+                        class="group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+                    Complete Profile
+                </button>
+            </div>
+        </form>
+    </div>
+</main>
+
+<script>
+function showRoleFields(role) {
+    // Hide all role-specific fields
+    document.getElementById('founder-fields').classList.add('hidden');
+    document.getElementById('collaborator-fields').classList.add('hidden');
+    document.getElementById('investor-fields').classList.add('hidden');
+
+    // Show the selected role's fields
+    if (role) {
+        document.getElementById(`${role}-fields`).classList.remove('hidden');
+    }
+}
+
+// Handle form submission
+document.getElementById('completeProfileForm').addEventListener('submit', async function(e) {
+    e.preventDefault();
+    
+    try {
+        const formData = new FormData(this);
+        const formObject = Object.fromEntries(formData);
+        
+        // Validate role selection
+        if (!formObject.role) {
+            throw new Error('Please select your role');
+        }
+
+        // Validate role-specific fields
+        switch(formObject.role) {
+            case 'founder':
+                if (!formObject.company) {
+                    throw new Error('Please enter your company name');
+                }
+                break;
+            case 'collaborator':
+                if (!formObject.skills) {
+                    throw new Error('Please enter your skills');
+                }
+                break;
+            case 'investor':
+                if (!formObject.investmentRange) {
+                    throw new Error('Please select your investment range');
+                }
+                break;
+        }
+
+        const response = await fetch('/auth/complete-profile', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(formObject),
+            credentials: 'same-origin'
+        });
+
+        if (!response.ok) {
+            const data = await response.json();
+            throw new Error(data.error || 'Failed to complete profile');
+        }
+
+        // Redirect to dashboard on success
+        window.location.href = '/dashboard';
+    } catch (error) {
+        const errorDiv = document.getElementById('error-message');
+        const errorText = errorDiv.querySelector('.text-red-700');
+        errorText.textContent = error.message || 'Failed to complete profile. Please try again.';
+        errorDiv.classList.remove('hidden');
+    }
+});
+</script>
+
+<%- include('partials/footer') %> 

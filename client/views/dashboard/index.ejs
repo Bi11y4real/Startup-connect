@@ -1,0 +1,69 @@
+<%- include('../partials/header') %>
+
+<div class="container mx-auto px-4 py-8">
+    <div class="mb-8">
+        <h1 class="text-3xl font-bold text-gray-900">Welcome, <%= user.name %></h1>
+        <p class="text-gray-600 mt-2">Your role: <%= role.charAt(0).toUpperCase() + role.slice(1) %></p>
+    </div>
+
+    <% if (role === 'founder') { %>
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+            <div class="bg-white rounded-lg shadow p-6">
+                <h3 class="text-lg font-semibold text-gray-700">Active Projects</h3>
+                <p class="text-3xl font-bold text-primary mt-2"><%= activeProjects %></p>
+            </div>
+            <div class="bg-white rounded-lg shadow p-6">
+                <h3 class="text-lg font-semibold text-gray-700">Total Investment</h3>
+                <p class="text-3xl font-bold text-primary mt-2">Kshs<%= totalInvestment.toLocaleString() %></p>
+            </div>
+            <div class="bg-white rounded-lg shadow p-6">
+                <h3 class="text-lg font-semibold text-gray-700">Total Collaborators</h3>
+                <p class="text-3xl font-bold text-primary mt-2"><%= totalCollaborators %></p>
+            </div>
+        </div>
+
+        <div class="flex justify-between items-center mb-6">
+            <h2 class="text-2xl font-bold text-gray-900">Your Projects</h2>
+            <a href="/dashboard/projects/new" class="bg-primary hover:bg-primary-dark text-white px-4 py-2 rounded-md">Create New Project</a>
+        </div>
+    <% } else if (role === 'investor') { %>
+        <div class="flex justify-between items-center mb-6">
+            <h2 class="text-2xl font-bold text-gray-900">Investment Opportunities</h2>
+            <div class="flex space-x-4">
+                <button class="bg-gray-100 hover:bg-gray-200 text-gray-800 px-4 py-2 rounded-md">Filter</button>
+                <button class="bg-gray-100 hover:bg-gray-200 text-gray-800 px-4 py-2 rounded-md">Sort</button>
+            </div>
+        </div>
+    <% } else if (role === 'collaborator') { %>
+        <div class="flex justify-between items-center mb-6">
+            <h2 class="text-2xl font-bold text-gray-900">Collaboration Opportunities</h2>
+            <div class="flex space-x-4">
+                <button class="bg-gray-100 hover:bg-gray-200 text-gray-800 px-4 py-2 rounded-md">Filter by Skills</button>
+                <button class="bg-gray-100 hover:bg-gray-200 text-gray-800 px-4 py-2 rounded-md">Sort</button>
+            </div>
+        </div>
+    <% } %>
+
+    <% if (projects && projects.length > 0) { %>
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <% projects.forEach(project => { %>
+                <%- include('../partials/projectCard', { project: project }) %>
+            <% }); %>
+        </div>
+    <% } else { %>
+        <div class="bg-white rounded-lg shadow-sm p-8 text-center">
+            <h3 class="text-xl font-semibold text-gray-700 mb-2">No Projects Found</h3>
+            <p class="text-gray-600">
+                <% if (role === 'founder') { %>
+                    Start by creating your first project!
+                <% } else if (role === 'investor') { %>
+                    Check back later for new investment opportunities.
+                <% } else if (role === 'collaborator') { %>
+                    Check back later for new collaboration opportunities.
+                <% } %>
+            </p>
+        </div>
+    <% } %>
+</div>
+
+<%- include('../partials/footer') %> 

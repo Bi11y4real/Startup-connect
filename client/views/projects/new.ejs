@@ -1,0 +1,263 @@
+<%- include('../partials/header') %>
+
+<main class="flex-grow py-12 px-4 sm:px-6 lg:px-8 bg-gray-50">
+    <div class="max-w-3xl mx-auto">
+        <div class="bg-white shadow rounded-lg p-6">
+            <div class="mb-8">
+                <h1 class="text-3xl font-bold text-gray-900 mb-2">Create New Project</h1>
+                <p class="text-gray-600">Share your vision and find the right collaborators and investors.</p>
+            </div>
+
+            <% if (locals.error) { %>
+            <div class="rounded-md bg-red-50 p-4 mb-6">
+                <div class="flex">
+                    <div class="flex-shrink-0">
+                        <svg class="h-5 w-5 text-red-400" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+                            <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd" />
+                        </svg>
+                    </div>
+                    <div class="ml-3">
+                        <p class="text-sm font-medium text-red-800"><%= error %></p>
+                    </div>
+                </div>
+            </div>
+            <% } %>
+
+            <form action="/projects" method="POST" enctype="multipart/form-data" class="space-y-6" id="projectForm">
+                <!-- Basic Information -->
+                <div class="space-y-4">
+                    <h2 class="text-xl font-semibold text-gray-900">Basic Information</h2>
+                    
+                    <div>
+                        <label for="title" class="block text-sm font-medium text-gray-700">Project Title *</label>
+                        <input type="text" id="title" name="title" required
+                               class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-primary focus:border-primary sm:text-sm"
+                               value="<%= locals.formData ? formData.title : '' %>"
+                               placeholder="Enter a clear, descriptive title">
+                    </div>
+
+                    <div>
+                        <label for="description" class="block text-sm font-medium text-gray-700">Project Description *</label>
+                        <textarea id="description" name="description" rows="4" required
+                                  class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-primary focus:border-primary sm:text-sm"
+                                  placeholder="Describe your project, its goals, and potential impact"><%= locals.formData ? formData.description : '' %></textarea>
+                    </div>
+
+                    <div>
+                        <label for="industry" class="block text-sm font-medium text-gray-700">Industry *</label>
+                        <select id="industry" name="industry" required
+                                class="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-primary focus:border-primary sm:text-sm rounded-md">
+                            <option value="">Select an industry</option>
+                            <option value="Technology" <%= locals.formData && formData.industry === 'Technology' ? 'selected' : '' %>>Technology</option>
+                            <option value="Healthcare" <%= locals.formData && formData.industry === 'Healthcare' ? 'selected' : '' %>>Healthcare</option>
+                            <option value="Finance" <%= locals.formData && formData.industry === 'Finance' ? 'selected' : '' %>>Finance</option>
+                            <option value="Education" <%= locals.formData && formData.industry === 'Education' ? 'selected' : '' %>>Education</option>
+                            <option value="E-commerce" <%= locals.formData && formData.industry === 'E-commerce' ? 'selected' : '' %>>E-commerce</option>
+                            <option value="Sustainability" <%= locals.formData && formData.industry === 'Sustainability' ? 'selected' : '' %>>Sustainability</option>
+                            <option value="Other" <%= locals.formData && formData.industry === 'Other' ? 'selected' : '' %>>Other</option>
+                        </select>
+                    </div>
+                </div>
+
+                <!-- Funding Information -->
+                <div class="space-y-4 pt-6">
+                    <h2 class="text-xl font-semibold text-gray-900">Funding Information</h2>
+                    
+                    <div>
+                        <label for="fundingGoal" class="block text-sm font-medium text-gray-700">Funding Goal (Kshs) *</label>
+                        <div class="mt-1 relative rounded-md shadow-sm">
+                            <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                <span class="text-gray-500 sm:text-sm">$</span>
+                            </div>
+                            <input type="number" id="fundingGoal" name="fundingGoal" required min="1000"
+                                   class="block w-full pl-7 pr-12 border border-gray-300 rounded-md focus:outline-none focus:ring-primary focus:border-primary sm:text-sm"
+                                   value="<%= locals.formData ? formData.fundingGoal : '' %>"
+                                   placeholder="50000">
+                            <div class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
+                                <span class="text-gray-500 sm:text-sm">Kshs</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div>
+                        <label for="timeline" class="block text-sm font-medium text-gray-700">Project Timeline</label>
+                        <input type="text" id="timeline" name="timeline"
+                               class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-primary focus:border-primary sm:text-sm"
+                               value="<%= locals.formData ? formData.timeline : '' %>"
+                               placeholder="e.g., 12 months">
+                    </div>
+                </div>
+
+                <!-- Additional Information -->
+                <div class="space-y-4 pt-6">
+                    <h2 class="text-xl font-semibold text-gray-900">Additional Information</h2>
+                    
+                    <div>
+                        <label for="location" class="block text-sm font-medium text-gray-700">Location</label>
+                        <input type="text" id="location" name="location"
+                               class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-primary focus:border-primary sm:text-sm"
+                               value="<%= locals.formData ? formData.location : '' %>"
+                               placeholder="City, Country">
+                    </div>
+
+                    <div>
+                        <label for="website" class="block text-sm font-medium text-gray-700">Website</label>
+                        <input type="url" id="website" name="website"
+                               class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-primary focus:border-primary sm:text-sm"
+                               value="<%= locals.formData ? formData.website : '' %>"
+                               placeholder="https://example.com">
+                    </div>
+
+                    <div>
+                        <label for="pitch" class="block text-sm font-medium text-gray-700">Elevator Pitch</label>
+                        <textarea id="pitch" name="pitch" rows="3"
+                                  class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-primary focus:border-primary sm:text-sm"
+                                  placeholder="Brief, compelling summary of your project"><%= locals.formData ? formData.pitch : '' %></textarea>
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700">Project Image</label>
+                        <div class="mt-1 flex justify-center px-6 pt-5 pb-6 border-2 border-gray-300 border-dashed rounded-md" id="dropZone">
+                            <div class="space-y-1 text-center">
+                                <svg class="mx-auto h-12 w-12 text-gray-400" stroke="currentColor" fill="none" viewBox="0 0 48 48">
+                                    <path d="M28 8H12a4 4 0 00-4 4v20m32-12v8m0 0v8a4 4 0 01-4 4H12a4 4 0 01-4-4v-4m32-4l-3.172-3.172a4 4 0 00-5.656 0L28 28M8 32l9.172-9.172a4 4 0 015.656 0L28 28m0 0l4 4m4-24h8m-4-4v8m-12 4h.02" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+                                </svg>
+                                <div class="flex text-sm text-gray-600">
+                                    <label for="image" class="relative cursor-pointer bg-white rounded-md font-medium text-primary hover:text-primary-dark focus-within:outline-none focus-within:ring-2 focus-within:ring-offset-2 focus-within:ring-primary">
+                                        <span>Upload a file</span>
+                                        <input id="image" name="image" type="file" accept="image/*" class="sr-only" onchange="handleFileSelect(this)">
+                                    </label>
+                                    <p class="pl-1">or drag and drop</p>
+                                </div>
+                                <p class="text-xs text-gray-500">PNG, JPG, GIF up to 5MB</p>
+                                <div id="imagePreview" class="mt-2 hidden">
+                                    <img src="" alt="Preview" class="mx-auto h-32 w-auto">
+                                    <p id="fileInfo" class="text-sm text-gray-500 mt-2"></p>
+                                </div>
+                                <div id="uploadError" class="mt-2 hidden text-sm text-red-600"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="pt-6">
+                    <button type="submit"
+                            class="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-primary hover:bg-primary-dark focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary">
+                        Create Project
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</main>
+
+<%- include('../partials/footer') %>
+
+<script>
+    function handleFileSelect(input) {
+        const preview = document.getElementById('imagePreview');
+        const previewImg = preview.querySelector('img');
+        const fileInfo = document.getElementById('fileInfo');
+        const errorDiv = document.getElementById('uploadError');
+        const file = input.files[0];
+
+        // Reset error message
+        errorDiv.textContent = '';
+        errorDiv.classList.add('hidden');
+
+        if (file) {
+            // Validate file type
+            if (!file.type.startsWith('image/')) {
+                errorDiv.textContent = 'Please select an image file.';
+                errorDiv.classList.remove('hidden');
+                input.value = '';
+                return;
+            }
+
+            // Validate file size (5MB)
+            if (file.size > 5 * 1024 * 1024) {
+                errorDiv.textContent = 'File size must be less than 5MB.';
+                errorDiv.classList.remove('hidden');
+                input.value = '';
+                return;
+            }
+
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                previewImg.src = e.target.result;
+                preview.classList.remove('hidden');
+                fileInfo.textContent = `File: ${file.name} (${(file.size / 1024).toFixed(1)} KB)`;
+            }
+            reader.readAsDataURL(file);
+
+            // Log file details
+            console.log('Selected file:', {
+                name: file.name,
+                type: file.type,
+                size: file.size
+            });
+        } else {
+            previewImg.src = '';
+            preview.classList.add('hidden');
+            fileInfo.textContent = '';
+        }
+    }
+
+    // Add drag and drop functionality
+    const dropZone = document.getElementById('dropZone');
+    
+    ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+        dropZone.addEventListener(eventName, preventDefaults, false);
+    });
+
+    function preventDefaults (e) {
+        e.preventDefault();
+        e.stopPropagation();
+    }
+
+    ['dragenter', 'dragover'].forEach(eventName => {
+        dropZone.addEventListener(eventName, highlight, false);
+    });
+
+    ['dragleave', 'drop'].forEach(eventName => {
+        dropZone.addEventListener(eventName, unhighlight, false);
+    });
+
+    function highlight(e) {
+        dropZone.classList.add('border-primary', 'border-opacity-50');
+    }
+
+    function unhighlight(e) {
+        dropZone.classList.remove('border-primary', 'border-opacity-50');
+    }
+
+    dropZone.addEventListener('drop', handleDrop, false);
+
+    function handleDrop(e) {
+        const dt = e.dataTransfer;
+        const file = dt.files[0];
+        const fileInput = document.getElementById('image');
+        
+        // Create a new FileList containing the dropped file
+        const dataTransfer = new DataTransfer();
+        dataTransfer.items.add(file);
+        fileInput.files = dataTransfer.files;
+        
+        handleFileSelect(fileInput);
+    }
+
+    // Form submission handling
+    document.getElementById('projectForm').addEventListener('submit', function(e) {
+        const fileInput = document.getElementById('image');
+        const errorDiv = document.getElementById('uploadError');
+        
+        if (fileInput.files.length > 0) {
+            const file = fileInput.files[0];
+            console.log('Submitting form with file:', {
+                name: file.name,
+                type: file.type,
+                size: file.size
+            });
+        }
+    });
+</script> 

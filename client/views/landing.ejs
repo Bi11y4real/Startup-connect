@@ -1,0 +1,62 @@
+<%- include('partials/header') %>
+
+<main class="flex-grow">
+    <!-- Hero Section -->
+    <div class="relative bg-gray-900 min-h-[80vh] flex items-center">
+        <!-- Subtle geometric background -->
+        <div class="absolute inset-0 overflow-hidden">
+            <div class="absolute inset-0 bg-gradient-to-br from-blue-900/20 to-purple-900/20"></div>
+            <div class="absolute top-0 left-0 w-full h-full bg-[radial-gradient(circle_at_top_right,rgba(59,130,246,0.1),transparent_50%)]"></div>
+        </div>
+
+        <!-- Content -->
+        <div class="container mx-auto px-4 relative z-10">
+            <div class="max-w-4xl mx-auto text-center">
+                <h1 class="text-4xl md:text-5xl lg:text-6xl font-bold text-white mb-6 leading-tight">
+                    Connect. Collaborate.<br>
+                    <span class="text-primary-light">Fund Your Future.</span>
+                </h1>
+                
+                <p class="text-lg md:text-xl text-gray-300 mb-12 max-w-2xl mx-auto">
+                    The unified platform bringing founders, collaborators, and investors together to build the next generation of startups.
+                </p>
+                
+                <div class="flex flex-col sm:flex-row justify-center gap-4 sm:gap-6">
+                    <a href="/auth/signup/founder" 
+                       class="inline-flex items-center justify-center px-8 py-3 border border-transparent text-base font-medium rounded-lg text-white bg-primary hover:bg-primary-dark transition duration-300 ease-in-out">
+                        Launch Your Vision
+                    </a>
+                    <a href="/projects" 
+                       class="inline-flex items-center justify-center px-8 py-3 border-2 border-primary-light text-base font-medium rounded-lg text-primary-light hover:bg-primary-light hover:text-gray-900 transition duration-300 ease-in-out">
+                        Explore Opportunities
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Features Section -->
+    <div class="bg-white py-24">
+        <div class="container mx-auto px-4">
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-12">
+                <div class="text-center">
+                    <div class="text-primary text-4xl mb-4">🚀</div>
+                    <h3 class="text-xl font-semibold mb-2">For Founders</h3>
+                    <p class="text-gray-600">Launch and scale your startup with the right team and resources.</p>
+                </div>
+                <div class="text-center">
+                    <div class="text-primary text-4xl mb-4">👥</div>
+                    <h3 class="text-xl font-semibold mb-2">For Collaborators</h3>
+                    <p class="text-gray-600">Join exciting projects and shape the future of technology.</p>
+                </div>
+                <div class="text-center">
+                    <div class="text-primary text-4xl mb-4">💎</div>
+                    <h3 class="text-xl font-semibold mb-2">For Investors</h3>
+                    <p class="text-gray-600">Discover and support the next generation of innovators.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</main>
+
+<%- include('partials/footer') %> 

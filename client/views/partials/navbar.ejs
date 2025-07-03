@@ -1,0 +1,152 @@
+<nav class="bg-white shadow-sm">
+    <div class="container mx-auto px-4">
+        <div class="flex justify-between items-center h-16">
+            <!-- Logo -->
+            <a href="/" class="flex items-center">
+                <span class="text-xl font-bold text-primary">StartupConnect</span>
+            </a>
+
+            <!-- Desktop Navigation -->
+            <div class="hidden md:flex items-center space-x-4">
+                <a href="/projects" class="text-gray-700 hover:text-primary-dark px-3 py-2 rounded-md text-sm font-medium">Projects</a>
+                
+                <% if (locals.user) { %>
+                    <a href="/dashboard" class="text-gray-700 hover:text-primary-dark px-3 py-2 rounded-md text-sm font-medium">Dashboard</a>
+                    <div class="relative ml-3">
+                        <button type="button" class="flex items-center text-gray-700 hover:text-primary-dark px-3 py-2 rounded-md text-sm font-medium focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary">
+                            <span><%= user.name %></span>
+                            <svg class="ml-1 h-5 w-5 transition-transform duration-200" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+                                <path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd" />
+                            </svg>
+                        </button>
+                        <div class="hidden absolute right-0 mt-2 w-48 rounded-md shadow-lg py-1 bg-white ring-1 ring-black ring-opacity-5 transform opacity-0 scale-95 transition-all duration-200 ease-out z-50">
+                            <div class="py-1">
+                                <a href="/dashboard/profile" class="group flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 hover:text-gray-900">
+                                    <svg class="mr-3 h-5 w-5 text-gray-400 group-hover:text-gray-500" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+                                        <path fill-rule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clip-rule="evenodd" />
+                                    </svg>
+                                    Profile
+                                </a>
+                                <% if (user.role === 'founder') { %>
+                                    <a href="/dashboard/projects" class="group flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 hover:text-gray-900">
+                                        <svg class="mr-3 h-5 w-5 text-gray-400 group-hover:text-gray-500" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+                                            <path fill-rule="evenodd" d="M6 6V5a3 3 0 013-3h2a3 3 0 013 3v1h2a2 2 0 012 2v3.57A22.952 22.952 0 0110 13a22.95 22.95 0 01-8-1.43V8a2 2 0 012-2h2zm2-1a1 1 0 011-1h2a1 1 0 011 1v1H8V5zm1 5a1 1 0 011-1h.01a1 1 0 110 2H10a1 1 0 01-1-1z" clip-rule="evenodd" />
+                                            <path d="M2 13.692V16a2 2 0 002 2h12a2 2 0 002-2v-2.308A24.974 24.974 0 0110 15c-2.796 0-5.487-.46-8-1.308z" />
+                                        </svg>
+                                        My Projects
+                                    </a>
+                                <% } %>
+                                <div class="border-t border-gray-100"></div>
+                                <a href="/auth/logout" class="group flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 hover:text-gray-900">
+                                    <svg class="mr-3 h-5 w-5 text-gray-400 group-hover:text-gray-500" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+                                        <path fill-rule="evenodd" d="M3 3a1 1 0 00-1 1v12a1 1 0 102 0V4a1 1 0 00-1-1zm10.293 9.293a1 1 0 001.414 1.414l3-3a1 1 0 000-1.414l-3-3a1 1 0 10-1.414 1.414L14.586 9H7a1 1 0 100 2h7.586l-1.293 1.293z" clip-rule="evenodd" />
+                                    </svg>
+                                    Sign out
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                <% } else { %>
+                    <a href="/auth/login" class="text-gray-700 hover:text-primary-dark px-3 py-2 rounded-md text-sm font-medium">Login</a>
+                    <a href="/auth/register" class="bg-primary hover:bg-primary-dark text-white px-4 py-2 rounded-md text-sm font-medium">Sign Up</a>
+                <% } %>
+            </div>
+
+            <!-- Mobile menu button -->
+            <div class="md:hidden">
+                <button id="mobile-menu-button" class="text-gray-500 hover:text-gray-600 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-primary">
+                    <span class="sr-only">Open main menu</span>
+                    <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
+                    </svg>
+                </button>
+            </div>
+        </div>
+
+        <!-- Mobile Navigation -->
+        <div id="mobile-menu" class="hidden md:hidden">
+            <div class="px-2 pt-2 pb-3 space-y-1">
+                <a href="/projects" class="block text-gray-700 hover:text-primary-dark px-3 py-2 rounded-md text-base font-medium">Projects</a>
+                
+                <% if (locals.user) { %>
+                    <a href="/dashboard" class="block text-gray-700 hover:text-primary-dark px-3 py-2 rounded-md text-base font-medium">Dashboard</a>
+                    <a href="/dashboard/profile" class="block text-gray-700 hover:text-primary-dark px-3 py-2 rounded-md text-base font-medium">Profile</a>
+                    <% if (user.role === 'founder') { %>
+                        <a href="/dashboard/projects" class="block text-gray-700 hover:text-primary-dark px-3 py-2 rounded-md text-base font-medium">My Projects</a>
+                    <% } %>
+                    <a href="/auth/logout" class="block text-gray-700 hover:text-primary-dark px-3 py-2 rounded-md text-base font-medium">Sign out</a>
+                <% } else { %>
+                    <a href="/auth/login" class="block text-gray-700 hover:text-primary-dark px-3 py-2 rounded-md text-base font-medium">Login</a>
+                    <a href="/auth/register" class="block bg-primary hover:bg-primary-dark text-white px-4 py-2 rounded-md text-base font-medium">Sign Up</a>
+                <% } %>
+            </div>
+        </div>
+    </div>
+</nav>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Toggle mobile menu
+        const mobileMenuButton = document.getElementById('mobile-menu-button');
+        const mobileMenu = document.getElementById('mobile-menu');
+        
+        if (mobileMenuButton && mobileMenu) {
+            mobileMenuButton.addEventListener('click', function() {
+                mobileMenu.classList.toggle('hidden');
+            });
+        }
+
+        // Toggle desktop dropdown
+        const dropdownButton = document.querySelector('.relative button');
+        const dropdownMenu = document.querySelector('.relative .hidden');
+        
+        if (dropdownButton && dropdownMenu) {
+            // Add aria attributes for accessibility
+            dropdownButton.setAttribute('aria-expanded', 'false');
+            dropdownButton.setAttribute('aria-haspopup', 'true');
+            
+            const toggleDropdown = (show) => {
+                const arrow = dropdownButton.querySelector('svg');
+                if (show) {
+                    dropdownMenu.classList.remove('hidden');
+                    // Wait a frame to ensure 'hidden' is removed
+                    requestAnimationFrame(() => {
+                        dropdownMenu.classList.remove('opacity-0', 'scale-95');
+                        dropdownMenu.classList.add('opacity-100', 'scale-100');
+                        arrow.style.transform = 'rotate(180deg)';
+                    });
+                } else {
+                    dropdownMenu.classList.add('opacity-0', 'scale-95');
+                    dropdownMenu.classList.remove('opacity-100', 'scale-100');
+                    arrow.style.transform = 'rotate(0deg)';
+                    // Wait for animation to finish before hiding
+                    setTimeout(() => {
+                        dropdownMenu.classList.add('hidden');
+                    }, 200);
+                }
+                dropdownButton.setAttribute('aria-expanded', show);
+            };
+
+            // Toggle dropdown on button click
+            dropdownButton.addEventListener('click', function(e) {
+                e.stopPropagation();
+                const isExpanded = dropdownButton.getAttribute('aria-expanded') === 'true';
+                toggleDropdown(!isExpanded);
+            });
+
+            // Close dropdown when clicking outside
+            document.addEventListener('click', function(event) {
+                if (!dropdownButton.contains(event.target) && !dropdownMenu.contains(event.target)) {
+                    toggleDropdown(false);
+                }
+            });
+
+            // Close dropdown on escape key
+            document.addEventListener('keydown', function(event) {
+                if (event.key === 'Escape' && !dropdownMenu.classList.contains('hidden')) {
+                    toggleDropdown(false);
+                }
+            });
+        }
+    });
+</script> 
