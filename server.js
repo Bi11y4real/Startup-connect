@@ -2,9 +2,9 @@ require('dotenv').config();
 
 const express = require('express');
 const path = require('path');
-const bodyParser = require('body-parser');
+const bodyParser = 'body-parser';
 const cookieParser = require('cookie-parser');
-const { isAuthenticated, addUserToLocals } = require('./server/middleware/auth');
+const { isAuthenticated, addUserToLocals, isPaid } = require('./server/middleware/auth');
 
 // Initialize express app and set up middleware
 const app = express();
@@ -14,10 +14,14 @@ const PORT = process.env.PORT || 3000;
 app.set('view engine', 'ejs');
 app.set('views', path.join(__dirname, 'client', 'views'));
 
+// Stripe webhook needs raw body, so we define it before the other body parsers
+const { stripeWebhook } = require('./server/controllers/stripeController');
+app.post('/stripe-webhook', express.raw({type: 'application/json'}), stripeWebhook);
+
 // Middleware setup
 app.use(express.static(path.join(__dirname, 'client', 'public')));
-app.use(bodyParser.urlencoded({ extended: true }));
-app.use(bodyParser.json());
+app.use(express.urlencoded({ extended: true }));
+app.use(express.json());
 
 // Cookie parser with secret
 app.use(cookieParser(process.env.COOKIE_SECRET || 'your-secret-key'));
@@ -39,17 +43,18 @@ const indexRoutes = require('./server/routes/index');
 const authRoutes = require('./server/routes/auth');
 const projectRoutes = require('./server/routes/projects');
 const dashboardRoutes = require('./server/routes/dashboard');
-const collaborationsRoutes = require('./server/routes/collaborations');
+const collaborationsRoutes =require('./server/routes/collaborations');
+const paymentRoutes = require('./server/routes/payment');
 
 // Public routes
 app.use('/', indexRoutes);
 app.use('/auth', authRoutes);
-app.use('/projects', projectRoutes);
 
-// Protected routes with authentication middleware
+// Protected routes
+app.use('/projects', isAuthenticated, isPaid, projectRoutes);
 app.use('/dashboard', isAuthenticated, dashboardRoutes);
 app.use('/collaborations', isAuthenticated, collaborationsRoutes);
-// app.use('/profile', userRoutes);
+app.use('/payment', paymentRoutes); // The routes inside payment.js already handle isAuthenticated
 
 // Error handler
 app.use((err, req, res, next) => {
@@ -89,4 +94,4 @@ findAvailablePort(PORT)
   .catch(err => {
     console.error('Failed to start server:', err);
     process.exit(1);
-  }); 
+  });

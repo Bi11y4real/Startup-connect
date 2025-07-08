@@ -39,8 +39,8 @@
                     </div>
                     <% const progressWidth = Math.min((project.fundingRaised / project.fundingGoal * 100), 100).toFixed(1); %>
                     <div class="w-24 h-1 bg-gray-200 rounded-full mt-1">
-                        <div class="h-full bg-primary rounded-full" 
-                             style="width: <%= progressWidth %>%">
+                        <div class="h-full bg-primary rounded-full"
+                             style="width: <%= progressWidth + '%' %>">
                         </div>
                     </div>
                 </div>
@@ -66,4 +66,4 @@
     <a href="/projects/<%= project.id %>" class="block p-4 text-center text-sm font-medium text-primary hover:text-primary-dark border-t">
         View Details
     </a>
-</div> 2
+</div> 
