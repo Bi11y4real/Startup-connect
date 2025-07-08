@@ -7,7 +7,8 @@ const {
     updateDoc,
     query,
     where,
-    getDocs
+    getDocs,
+    deleteDoc
 } = require('firebase/firestore');
 
 const COLLECTION_NAME = 'users';
@@ -19,6 +20,7 @@ class User {
             const user = {
                 ...userData,
                 id: userId,
+                status: 'active', // Default status for new users
                 createdAt: new Date(),
                 updatedAt: new Date()
             };
@@ -60,6 +62,17 @@ class User {
         }
     }
 
+    static async delete(userId) {
+        try {
+            const userRef = doc(db, COLLECTION_NAME, userId);
+            await deleteDoc(userRef);
+            return true;
+        } catch (error) {
+            console.error('Error deleting user:', error);
+            throw error;
+        }
+    }
+
     static async setRole(userId, role) {
         try {
             const validRoles = ['founder', 'investor', 'collaborator'];
@@ -88,6 +101,16 @@ class User {
         }
     }
 
+    static async getTotalCount() {
+        try {
+            const querySnapshot = await getDocs(collection(db, COLLECTION_NAME));
+            return querySnapshot.size;
+        } catch (error) {
+            console.error('Error getting total user count:', error);
+            throw error;
+        }
+    }
+
     static async getProfile(userId) {
         try {
             const user = await this.getById(userId);
@@ -96,27 +119,27 @@ class User {
             }
 
             let additionalData = {};
+            const projectsRef = collection(db, 'projects');
+            let q;
+            let querySnapshot;
+
             switch (user.role) {
                 case 'founder':
-                    // Get founder's projects
-                    const founderProjects = await db.collection('projects')
-                        .where('founderId', '==', userId)
-                        .get();
-                    additionalData.projects = founderProjects.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+                    q = query(projectsRef, where('founderId', '==', userId));
+                    querySnapshot = await getDocs(q);
+                    additionalData.projects = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
                     break;
                 case 'investor':
-                    // Get investor's investments
-                    const investments = await db.collection('projects')
-                        .where('investors', 'array-contains', { userId })
-                        .get();
-                    additionalData.investments = investments.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+                    // Note: Firestore 'array-contains' is for single values. For multiple, you'd use 'in' queries.
+                    // This assumes an investor is linked to projects one by one in an array.
+                    q = query(projectsRef, where('investors', 'array-contains', userId));
+                    querySnapshot = await getDocs(q);
+                    additionalData.investments = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
                     break;
                 case 'collaborator':
-                    // Get collaborator's projects
-                    const collaborations = await db.collection('projects')
-                        .where('collaborators', 'array-contains', { userId })
-                        .get();
-                    additionalData.collaborations = collaborations.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+                    q = query(projectsRef, where('collaborators', 'array-contains', userId));
+                    querySnapshot = await getDocs(q);
+                    additionalData.collaborations = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
                     break;
             }
 
@@ -126,6 +149,54 @@ class User {
             };
         } catch (error) {
             console.error('Error getting user profile:', error);
+            throw error;
+        }
+    }
+
+    static async getAll(filters = {}) {
+        try {
+            const { searchTerm, role, status } = filters;
+            
+            let usersQuery = collection(db, COLLECTION_NAME);
+            const queryConstraints = [];
+
+            if (role) {
+                queryConstraints.push(where('role', '==', role));
+            }
+            if (status) {
+                queryConstraints.push(where('status', '==', status));
+            }
+
+            if (queryConstraints.length > 0) {
+                usersQuery = query(usersQuery, ...queryConstraints);
+            }
+
+            const querySnapshot = await getDocs(usersQuery);
+            let users = querySnapshot.docs.map(doc => {
+                const data = doc.data();
+                // Convert Firestore Timestamps to JS Date objects
+                if (data.createdAt && typeof data.createdAt.toDate === 'function') {
+                    data.createdAt = data.createdAt.toDate();
+                }
+                if (data.updatedAt && typeof data.updatedAt.toDate === 'function') {
+                    data.updatedAt = data.updatedAt.toDate();
+                }
+                return { id: doc.id, ...data };
+            });
+
+            // Firestore doesn't support native text search across multiple fields like SQL LIKE.
+            // We fetch based on indexed fields (role, status) first, then filter by search term.
+            if (searchTerm) {
+                const lowercasedTerm = searchTerm.toLowerCase();
+                users = users.filter(user => 
+                    (user.name && user.name.toLowerCase().includes(lowercasedTerm)) ||
+                    (user.email && user.email.toLowerCase().includes(lowercasedTerm))
+                );
+            }
+
+            return users;
+        } catch (error) {
+            console.error('Error getting all users:', error);
             throw error;
         }
     }

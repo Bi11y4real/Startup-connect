@@ -40,6 +40,9 @@ const authRoutes = require('./server/routes/auth');
 const projectRoutes = require('./server/routes/projects');
 const dashboardRoutes = require('./server/routes/dashboard');
 const collaborationsRoutes = require('./server/routes/collaborations');
+const applicationsRoutes = require('./server/routes/applications');
+const analyticsRoutes = require('./server/routes/analytics');
+const usersRoutes = require('./server/routes/users');
 
 // Public routes
 app.use('/', indexRoutes);
@@ -49,6 +52,9 @@ app.use('/projects', projectRoutes);
 // Protected routes with authentication middleware
 app.use('/dashboard', isAuthenticated, dashboardRoutes);
 app.use('/collaborations', isAuthenticated, collaborationsRoutes);
+app.use('/applications', isAuthenticated, applicationsRoutes);
+app.use('/analytics', isAuthenticated, analyticsRoutes);
+app.use('/users', isAuthenticated, usersRoutes);
 // app.use('/profile', userRoutes);
 
 // Error handler

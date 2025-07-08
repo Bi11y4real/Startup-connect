@@ -16,6 +16,7 @@ const {
 } = require('firebase/firestore');
 const fs = require('fs').promises;
 const path = require('path');
+const User = require('./user');
 
 const COLLECTION_NAME = 'projects';
 const PROJECTS_PER_PAGE = 12;
@@ -54,12 +55,16 @@ class Project {
                 imageUrl: imageUrl,
                 createdAt: serverTimestamp(),
                 updatedAt: serverTimestamp(),
-                status: 'active',
+                status: 'active', // e.g., 'idea', 'active', 'archived'
                 fundingRaised: 0,
+                fundingGoal: projectData.fundingGoal || 0,
                 collaborators: [],
                 investors: [],
+                tags: projectData.tags || [], // e.g., ['FinTech', 'AI', 'MVP']
+                openRoles: projectData.openRoles || [], // e.g., ['Frontend Developer', 'Marketing Manager']
                 likes: 0,
-                views: 0
+                views: 0,
+                applicationsCount: 0
             };
 
             // Save to Firestore
@@ -68,6 +73,23 @@ class Project {
         } catch (error) {
             console.error('Error creating project:', error.message);
             throw error;
+        }
+    }
+
+    static async incrementView(projectId) {
+        try {
+            const projectRef = doc(db, COLLECTION_NAME, projectId);
+            const projectSnap = await getDoc(projectRef);
+
+            if (projectSnap.exists()) {
+                const currentViews = projectSnap.data().views || 0;
+                await updateDoc(projectRef, {
+                    views: currentViews + 1
+                });
+            }
+        } catch (error) {
+            console.error('Error incrementing project view:', error);
+            // Don't throw, as this is a non-critical background operation
         }
     }
 
@@ -174,6 +196,46 @@ class Project {
             });
         } catch (error) {
             console.error('Error getting founder projects:', error);
+            throw error;
+        }
+    }
+
+    static async getAll() {
+        try {
+            const q = query(
+                collection(db, COLLECTION_NAME),
+                orderBy('createdAt', 'desc')
+            );
+            const querySnapshot = await getDocs(q);
+
+            const projects = await Promise.all(querySnapshot.docs.map(async (doc) => {
+                const data = doc.data();
+                
+                let founderName = 'Unknown';
+                if (data.founderId) {
+                    try {
+                        const founder = await User.getById(data.founderId);
+                        if (founder) {
+                            founderName = founder.name;
+                        }
+                    } catch (userError) {
+                        console.error(`Could not fetch founder for project ${doc.id}`, userError);
+                    }
+                }
+
+                if (data.createdAt) {
+                    data.createdAt = data.createdAt.toDate();
+                }
+                if (data.updatedAt) {
+                    data.updatedAt = data.updatedAt.toDate();
+                }
+
+                return { id: doc.id, ...data, founderName };
+            }));
+
+            return projects;
+        } catch (error) {
+            console.error('Error getting all projects:', error);
             throw error;
         }
     }
@@ -325,30 +387,31 @@ class Project {
 
     static async getStats(userId) {
         try {
-            const q = query(
-                collection(db, COLLECTION_NAME),
-                where('founderId', '==', userId)
-            );
-            const querySnapshot = await getDocs(q);
+            const projects = await this.getByFounderId(userId);
             
-            let stats = {
+            const stats = {
                 activeProjects: 0,
-                totalInvestment: 0,
-                totalCollaborators: 0
+                totalFunding: 0,
+                totalFundingGoal: 0,
+                totalCollaborators: 0,
+                totalApplications: 0,
+                totalViews: 0,
             };
 
-            querySnapshot.forEach(doc => {
-                const project = doc.data();
+            projects.forEach(project => {
                 if (project.status === 'active') {
                     stats.activeProjects++;
                 }
-                stats.totalInvestment += project.fundingRaised || 0;
+                stats.totalFunding += project.fundingRaised || 0;
+                stats.totalFundingGoal += project.fundingGoal || 0;
                 stats.totalCollaborators += (project.collaborators || []).length;
+                stats.totalApplications += project.applicationsCount || 0;
+                stats.totalViews += project.views || 0;
             });
 
             return stats;
         } catch (error) {
-            console.error('Error getting project stats:', error);
+            console.error('Error getting founder stats:', error);
             throw error;
         }
     }
@@ -379,6 +442,29 @@ class Project {
             });
         } catch (error) {
             console.error('Error getting projects by status:', error);
+            throw error;
+        }
+    }
+
+    static async getPlatformStats() {
+        try {
+            const querySnapshot = await getDocs(collection(db, COLLECTION_NAME));
+            
+            let stats = {
+                totalProjects: querySnapshot.size,
+                totalInvestment: 0,
+                totalCollaborators: 0
+            };
+
+            querySnapshot.forEach(doc => {
+                const project = doc.data();
+                stats.totalInvestment += project.fundingRaised || 0;
+                stats.totalCollaborators += (project.collaborators || []).length;
+            });
+
+            return stats;
+        } catch (error) {
+            console.error('Error getting platform stats:', error);
             throw error;
         }
     }

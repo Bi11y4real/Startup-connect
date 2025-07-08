@@ -1,69 +1,57 @@
-<div class="bg-white rounded-lg shadow-sm hover:shadow-md transition-shadow duration-300 overflow-hidden">
-    <% if (project.imageUrl) { %>
-        <img src="<%= project.imageUrl %>" alt="<%= project.title %>" class="w-full h-48 object-cover">
-    <% } else { %>
-        <div class="w-full h-48 bg-gray-100 flex items-center justify-center">
-            <span class="text-4xl text-gray-400">🚀</span>
-        </div>
-    <% } %>
-    
-    <div class="p-6">
-        <div class="flex items-start justify-between">
-            <h3 class="text-lg font-semibold text-gray-900 mb-2">
-                <%= project.title %>
-            </h3>
-            <span class="px-2 py-1 text-xs font-medium bg-primary-light/10 text-primary-dark rounded-full">
-                <%= project.industry %>
-            </span>
-        </div>
-
-        <p class="text-gray-600 text-sm mb-4 line-clamp-2">
-            <%= project.description %>
-        </p>
-
-        <div class="flex items-center justify-between">
-            <div class="flex items-center space-x-2">
-                <img src="<%= project.founderAvatar || 'https://ui-avatars.com/api/?name=' + encodeURIComponent(project.founderName) %>" 
-                     alt="<%= project.founderName %>" 
-                     class="w-6 h-6 rounded-full">
-                <span class="text-sm text-gray-500">
-                    <%= project.founderName %>
-                </span>
-            </div>
-
-            <% if (project.fundingGoal) { %>
-                <div class="text-right">
-                    <div class="text-sm font-medium text-gray-900">
-                        Kshs<%= (project.fundingRaised || 0).toLocaleString() %> 
-                        <span class="text-gray-500">/ Kshs<%= project.fundingGoal.toLocaleString() %></span>
-                    </div>
-                    <% const progressWidth = Math.min((project.fundingRaised / project.fundingGoal * 100), 100).toFixed(1); %>
-                    <div class="w-24 h-1 bg-gray-200 rounded-full mt-1">
-                        <div class="h-full bg-primary rounded-full" 
-                             style="width: <%= progressWidth %>%">
-                        </div>
-                    </div>
-                </div>
-            <% } %>
-        </div>
-
-        <% if (project.skills && project.skills.length > 0) { %>
-            <div class="mt-4 flex flex-wrap gap-2">
-                <% project.skills.slice(0, 3).forEach(skill => { %>
-                    <span class="px-2 py-1 text-xs bg-gray-100 text-gray-600 rounded-full">
-                        <%= skill %>
-                    </span>
-                <% }); %>
-                <% if (project.skills.length > 3) { %>
-                    <span class="px-2 py-1 text-xs bg-gray-100 text-gray-600 rounded-full">
-                        +<%= project.skills.length - 3 %> more
-                    </span>
-                <% } %>
-            </div>
-        <% } %>
+<div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6 flex items-start space-x-6">
+    <!-- Left Column: Image -->
+    <div class="flex-shrink-0">
+        <img class="h-24 w-24 rounded-xl object-cover" src="<%= project.imageUrl || 'https://images.unsplash.com/photo-1556761175-5973dc0f32e7?q=80&w=2832&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D' %>" alt="<%= project.title %> logo">
     </div>
 
-    <a href="/projects/<%= project.id %>" class="block p-4 text-center text-sm font-medium text-primary hover:text-primary-dark border-t">
-        View Details
-    </a>
-</div> 2
+    <!-- Right Column: Details -->
+    <div class="flex-grow flex flex-col h-full">
+        <!-- Card Header -->
+        <div class="flex justify-between items-start">
+            <div>
+                <h3 class="text-xl font-bold text-gray-900"><%= project.title %></h3>
+                <p class="text-sm text-gray-600 mt-1"><%= project.description %></p>
+                <!-- Status Badge -->
+                <% 
+                    let statusClasses = '';
+                    if (project.status === 'active') {
+                        statusClasses = 'bg-green-100 text-green-800';
+                    } else {
+                        statusClasses = 'bg-gray-100 text-gray-800';
+                    }
+                %>
+                <span class="mt-3 inline-block px-2.5 py-1 text-xs font-bold <%= statusClasses %> rounded-full capitalize"><%= project.status %></span>
+            </div>
+            <!-- Edit/Share Icons -->
+            <div class="flex items-center space-x-3">
+                <a href="/dashboard/projects/<%= project.id %>/edit" class="text-gray-400 hover:text-primary">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.5L14.732 3.732z"></path></svg>
+                </a>
+                <button class="text-gray-400 hover:text-primary">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.684 13.342C8.886 12.938 9 12.482 9 12s-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.367 2.684 3 3 0 00-5.367-2.684z"></path></svg>
+                </button>
+            </div>
+        </div>
+
+        <!-- Spacer -->
+        <div class="flex-grow"></div>
+
+        <!-- Funding Progress -->
+        <div class="mt-4">
+            <div class="flex justify-between items-center mb-1">
+                <span class="text-sm font-medium text-gray-700">Funding Progress</span>
+                <span class="text-sm font-bold text-gray-900">Ksh<%= (project.fundingRaised || 0).toLocaleString() %> / Ksh<%= (project.fundingGoal || 0).toLocaleString() %></span>
+            </div>
+            <% const fundingPercentage = project.fundingGoal > 0 ? (project.fundingRaised / project.fundingGoal) * 100 : 0; %>
+            <div class="w-full bg-gray-200 rounded-full h-2">
+                <div class="bg-purple-600 h-2 rounded-full" style="width: <%= `${fundingPercentage}%` %>"></div>
+            </div>
+        </div>
+        
+        <!-- Actions -->
+        <div class="grid grid-cols-2 gap-4 mt-4">
+            <a href="/projects/<%= project.id %>" class="w-full text-center px-4 py-2.5 border border-gray-300 rounded-lg text-sm font-semibold text-gray-800 hover:bg-gray-50">View Details</a>
+            <a href="/dashboard/projects/<%= project.id %>/edit" class="w-full text-center px-4 py-2.5 bg-primary text-white rounded-lg text-sm font-semibold hover:bg-primary-dark transition-colors">Manage</a>
+        </div>
+    </div>
+</div>

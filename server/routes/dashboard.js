@@ -5,6 +5,7 @@ const path = require('path');
 const { auth } = require('../config/firebase');
 const User = require('../models/user');
 const Project = require('../models/project');
+const Analytics = require('../models/analytics');
 const { isAuthenticated } = require('../middleware/auth');
 
 // Configure multer for file uploads
@@ -51,10 +52,9 @@ router.get('/', isAuthenticated, async (req, res) => {
                 const projects = await Project.getByFounderId(req.user.id);
                 viewData = {
                     ...viewData,
+                    user: req.user, // Pass user object for welcome message
                     projects,
-                    activeProjects: stats.activeProjects,
-                    totalInvestment: stats.totalInvestment,
-                    totalCollaborators: stats.totalCollaborators
+                    stats // Pass the whole stats object
                 };
                 break;
 
@@ -73,6 +73,19 @@ router.get('/', isAuthenticated, async (req, res) => {
                 viewData = {
                     ...viewData,
                     projects: collaborationProjects
+                };
+                break;
+
+            case 'admin':
+                // Get all projects and platform stats for admin
+                const allProjects = await Project.getAll();
+                const platformStats = await Project.getPlatformStats();
+                const totalUsers = await User.getTotalCount();
+                viewData = {
+                    ...viewData,
+                    projects: allProjects,
+                    ...platformStats,
+                    totalUsers
                 };
                 break;
 
@@ -242,7 +255,7 @@ router.post('/projects/:id/edit', isAuthenticated, upload.single('image'), async
         }
 
         await Project.update(req.params.id, projectData);
-        res.redirect('/dashboard/projects');
+        res.redirect(`/projects/${req.params.id}`);
     } catch (error) {
         console.error('Error updating project:', error);
         res.status(500).send('Error updating project');
@@ -318,6 +331,24 @@ router.post('/profile', isAuthenticated, async (req, res) => {
     } catch (error) {
         console.error('Error updating profile:', error);
         res.status(500).send('Error updating profile');
+    }
+});
+
+// Analytics data endpoint for founder
+router.get('/analytics', isAuthenticated, async (req, res) => {
+    try {
+        // Ensure the user is a founder
+        if (req.user.role !== 'founder') {
+            return res.status(403).json({ error: 'Access denied. Only founders can view analytics.' });
+        }
+
+        const founderId = req.user.id;
+        const analyticsData = await Analytics.getFounderAnalytics(founderId);
+
+        res.json(analyticsData);
+    } catch (error) {
+        console.error('Error fetching founder analytics:', error);
+        res.status(500).json({ error: 'Failed to fetch analytics data.' });
     }
 });
 

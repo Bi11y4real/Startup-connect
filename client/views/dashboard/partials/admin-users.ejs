@@ -1,0 +1,305 @@
+<!-- User Management Section -->
+<div id="user-management-section" class="bg-white p-6 rounded-lg shadow-md">
+    <!-- Header -->
+    <div class="flex justify-between items-center mb-6">
+        <h2 class="text-2xl font-bold text-gray-900">User Management</h2>
+        <button id="new-user-btn" class="bg-primary text-white px-4 py-2 rounded-lg hover:bg-primary-dark transition-colors">
+            New User
+        </button>
+    </div>
+
+    <!-- New User Form Container -->
+    <div id="new-user-form-container" class="hidden mb-8"></div>
+
+    <!-- Filters -->
+    <div class="flex flex-wrap items-end gap-4 mb-8">
+        <div class="flex-grow" style="flex-basis: 250px;">
+            <label for="search-term" class="block text-sm font-medium text-gray-700 mb-1">Search</label>
+            <input type="text" id="search-term" placeholder="Name or email..." class="w-full px-3 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-primary focus:border-primary">
+        </div>
+        <div class="flex-grow" style="flex-basis: 180px;">
+            <label for="role-filter" class="block text-sm font-medium text-gray-700 mb-1">Role</label>
+            <select id="role-filter" class="w-full px-3 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-primary focus:border-primary">
+                <option value="">All Roles</option>
+                <option value="founder">Founder</option>
+                <option value="investor">Investor</option>
+                <option value="collaborator">Collaborator</option>
+                <option value="admin">Admin</option>
+                <option value="user">User</option>
+            </select>
+        </div>
+        <div class="flex-grow" style="flex-basis: 180px;">
+            <label for="status-filter" class="block text-sm font-medium text-gray-700 mb-1">Status</label>
+            <select id="status-filter" class="w-full px-3 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-primary focus:border-primary">
+                <option value="">All Statuses</option>
+                <option value="active">Active</option>
+                <option value="inactive">Inactive</option>
+                <option value="deleted">Deleted</option>
+            </select>
+        </div>
+        <div class="flex-initial">
+            <button id="filter-users-btn" class="w-full bg-primary text-white px-4 py-2 rounded-lg hover:bg-primary-dark transition-colors">
+                Filter
+            </button>
+        </div>
+    </div>
+
+    <!-- Users Table -->
+    <div class="overflow-x-auto">
+        <table class="w-full">
+            <thead class="bg-gray-50">
+                <tr>
+                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Name</th>
+                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Role</th>
+                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Joined On</th>
+                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+                </tr>
+            </thead>
+            <tbody id="users-table-body" class="bg-white divide-y divide-gray-200">
+                <!-- Rows will be injected by script -->
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<!-- Generic Modal for Viewing User Details -->
+<div id="view-user-modal" class="fixed inset-0 bg-gray-800 bg-opacity-60 overflow-y-auto h-full w-full hidden flex items-center justify-center" style="z-index: 100;">
+  <div class="relative p-8 bg-white w-full max-w-lg mx-auto rounded-lg shadow-xl">
+    <div class="flex justify-between items-center pb-4 border-b">
+      <h3 id="view-modal-title" class="text-2xl font-bold text-gray-800">User Details</h3>
+      <button id="view-modal-close-btn" class="text-gray-600 hover:text-gray-900 text-3xl font-bold">&times;</button>
+    </div>
+    <div id="view-modal-body" class="mt-6">
+      <!-- User details will be injected here -->
+    </div>
+    <div class="flex justify-end pt-4 mt-4 border-t">
+        <button type="button" id="view-modal-close-btn-bottom" class="bg-primary text-white px-4 py-2 rounded-lg">Close</button>
+    </div>
+  </div>
+</div>
+
+<script>
+    if (!document.getElementById('user-management-section').dataset.initialized) {
+        document.getElementById('user-management-section').dataset.initialized = true;
+
+        document.addEventListener('DOMContentLoaded', () => {
+            if ('<%= role %>' !== 'admin') return;
+
+            const usersTableBody = document.getElementById('users-table-body');
+            const filterButton = document.getElementById('filter-users-btn');
+            const searchTermInput = document.getElementById('search-term');
+            const roleFilter = document.getElementById('role-filter');
+            const statusFilter = document.getElementById('status-filter');
+            const newUserBtn = document.getElementById('new-user-btn');
+            const newUserFormContainer = document.getElementById('new-user-form-container');
+
+            // View Modal Elements
+            const viewModal = document.getElementById('view-user-modal');
+            const viewModalBody = document.getElementById('view-modal-body');
+            const viewModalCloseBtn = document.getElementById('view-modal-close-btn');
+            const viewModalCloseBtnBottom = document.getElementById('view-modal-close-btn-bottom');
+
+            const fetchAndRenderUsers = async () => {
+                const searchTerm = searchTermInput.value;
+                const role = roleFilter.value;
+                const status = statusFilter.value;
+                const params = new URLSearchParams({ searchTerm, role, status });
+
+                try {
+                    usersTableBody.innerHTML = `<tr><td colspan="5" class="px-6 py-4 text-center text-gray-500">Loading users...</td></tr>`;
+                    const response = await fetch(`/users?${params.toString()}`);
+                    if (!response.ok) throw new Error(`Failed to fetch users. Status: ${response.status}`);
+                    const users = await response.json();
+                    renderUsers(users);
+                } catch (error) {
+                    console.error('Error fetching users:', error);
+                    usersTableBody.innerHTML = `<tr><td colspan="5" class="px-6 py-4 text-center text-red-500">Failed to load users.</td></tr>`;
+                }
+            };
+
+            const renderUsers = (users) => {
+                usersTableBody.innerHTML = '';
+                if (users.length === 0) {
+                    usersTableBody.innerHTML = `<tr><td colspan="5" class="px-6 py-4 text-center text-gray-500">No users found.</td></tr>`;
+                    return;
+                }
+                users.forEach(user => {
+                    const joinedDate = user.createdAt ? new Date(user.createdAt).toLocaleDateString() : 'N/A';
+                    const statusBadgeColor = getStatusColor(user.status);
+                    const row = `
+                        <tr class="hover:bg-gray-50">
+                            <td class="px-6 py-4 whitespace-nowrap"><div class="flex items-center"><div class="ml-4"><div class="text-sm font-medium text-gray-900">${user.name || 'N/A'}</div><div class="text-sm text-gray-500">${user.email || 'N/A'}</div></div></div></td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${user.role ? user.role.charAt(0).toUpperCase() + user.role.slice(1) : 'N/A'}</td>
+                            <td class="px-6 py-4 whitespace-nowrap"><span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${statusBadgeColor}">${user.status ? user.status.charAt(0).toUpperCase() + user.status.slice(1) : 'N/A'}</span></td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${joinedDate}</td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                                <a href="#" class="text-primary hover:text-primary-dark action-view" data-user-id="${user.id}">View</a>
+                                <a href="#" class="text-indigo-600 hover:text-indigo-900 ml-4 action-edit" data-user-id="${user.id}">Edit</a>
+                                <a href="#" class="text-red-600 hover:text-red-900 ml-4 action-delete" data-user-id="${user.id}">Delete</a>
+                            </td>
+                        </tr>`;
+                    usersTableBody.insertAdjacentHTML('beforeend', row);
+                });
+            };
+
+            const getStatusColor = (status) => {
+                const colors = { active: 'bg-green-100 text-green-800', inactive: 'bg-yellow-100 text-yellow-800', deleted: 'bg-red-100 text-red-800' };
+                return colors[status] || 'bg-gray-100 text-gray-800';
+            };
+
+            const showCard = (content) => {
+                newUserFormContainer.innerHTML = content;
+                newUserFormContainer.classList.remove('hidden');
+                newUserFormContainer.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            };
+
+            const hideCard = () => {
+                newUserFormContainer.classList.add('hidden');
+                newUserFormContainer.innerHTML = '';
+            };
+
+            const handleFormSubmit = async (e) => {
+                e.preventDefault();
+                const form = e.target;
+                const userId = form.dataset.userId;
+                const formData = new FormData(form);
+                const data = Object.fromEntries(formData.entries());
+
+                if (!userId && !data.password) {
+                    alert('Password is required for new users.');
+                    return;
+                }
+
+                const url = userId ? `/users/${userId}` : '/users';
+                const method = userId ? 'PUT' : 'POST';
+
+                try {
+                    const response = await fetch(url, { method, headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(data) });
+                    if (!response.ok) {
+                        const error = await response.json();
+                        throw new Error(error.message || 'Form submission failed');
+                    }
+                    hideCard();
+                    fetchAndRenderUsers();
+                } catch (error) {
+                    console.error('Error submitting form:', error);
+                    alert(`Error: ${error.message}`);
+                }
+            };
+
+            const createForm = (user = {}) => {
+                const isNew = !user.id;
+                const userId = user.id || '';
+                return `
+                    <div class="bg-gray-50 p-6 rounded-lg border">
+                        <div class="flex justify-between items-center mb-4">
+                            <h3 class="text-xl font-bold text-gray-800">${isNew ? 'Create New User' : 'Edit User'}</h3>
+                            <button type="button" class="text-gray-600 hover:text-gray-900 text-3xl font-bold action-cancel">&times;</button>
+                        </div>
+                        <form id="user-form" data-user-id="${userId}" class="space-y-4">
+                            <div><label class="block text-sm font-medium text-gray-700">Name</label><input type="text" name="name" value="${user.name || ''}" class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-primary focus:border-primary" required></div>
+                            <div><label class="block text-sm font-medium text-gray-700">Email</label><input type="email" name="email" value="${user.email || ''}" class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-primary focus:border-primary" required ${!isNew ? 'readonly' : ''}></div>
+                            ${isNew ? `<div><label class="block text-sm font-medium text-gray-700">Password</label><input type="password" name="password" class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-primary focus:border-primary" required></div>` : ''}
+                            <div><label class="block text-sm font-medium text-gray-700">Role</label><select name="role" class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-primary focus:border-primary"><option value="user" ${user.role === 'user' ? 'selected' : ''}>User</option><option value="founder" ${user.role === 'founder' ? 'selected' : ''}>Founder</option><option value="investor" ${user.role === 'investor' ? 'selected' : ''}>Investor</option><option value="collaborator" ${user.role === 'collaborator' ? 'selected' : ''}>Collaborator</option><option value="admin" ${user.role === 'admin' ? 'selected' : ''}>Admin</option></select></div>
+                            <div><label class="block text-sm font-medium text-gray-700">Status</label><select name="status" class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-primary focus:border-primary"><option value="active" ${user.status === 'active' ? 'selected' : ''}>Active</option><option value="inactive" ${user.status === 'inactive' ? 'selected' : ''}>Inactive</option><option value="deleted" ${user.status === 'deleted' ? 'selected' : ''}>Deleted</option></select></div>
+                            <div class="flex justify-end pt-4"><button type="button" class="bg-gray-300 text-gray-800 px-4 py-2 rounded-lg mr-2 action-cancel">Cancel</button><button type="submit" class="bg-primary text-white px-4 py-2 rounded-lg">Save</button></div>
+                        </form>
+                    </div>
+                `;
+            };
+
+            const createView = (user) => {
+                const joinedDate = user.createdAt ? new Date(user.createdAt).toLocaleString() : 'N/A';
+                 return `
+                    <div class="bg-gray-50 p-6 rounded-lg border">
+                        <div class="flex justify-between items-center mb-4">
+                            <h3 class="text-xl font-bold text-gray-800">User Details</h3>
+                            <button type="button" class="text-gray-600 hover:text-gray-900 text-3xl font-bold action-cancel">&times;</button>
+                        </div>
+                        <div class="space-y-3">
+                            <p><strong>ID:</strong> <span class="text-gray-600">${user.id}</span></p>
+                            <p><strong>Name:</strong> <span class="text-gray-600">${user.name}</span></p>
+                            <p><strong>Email:</strong> <span class="text-gray-600">${user.email}</span></p>
+                            <p><strong>Role:</strong> <span class="text-gray-600">${user.role}</span></p>
+                            <p><strong>Status:</strong> <span class="text-gray-600">${user.status}</span></p>
+                            <p><strong>Joined:</strong> <span class="text-gray-600">${joinedDate}</span></p>
+                        </div>
+                         <div class="flex justify-end pt-4 mt-4 border-t">
+                            <button type="button" class="bg-primary text-white px-4 py-2 rounded-lg action-cancel">Close</button>
+                        </div>
+                    </div>
+                `;
+            };
+
+            // INITIAL SETUP & EVENT LISTENERS
+            fetchAndRenderUsers();
+            filterButton.addEventListener('click', fetchAndRenderUsers);
+
+            newUserBtn.addEventListener('click', () => {
+                const existingForm = newUserFormContainer.querySelector('#user-form');
+                if (existingForm && !existingForm.dataset.userId) {
+                    hideCard();
+                } else {
+                    showCard(createForm());
+                }
+            });
+
+            newUserFormContainer.addEventListener('click', (e) => {
+                if (e.target.classList.contains('action-cancel')) {
+                    hideCard();
+                }
+            });
+
+            newUserFormContainer.addEventListener('submit', (e) => {
+                if (e.target.id === 'user-form') {
+                    handleFormSubmit(e);
+                }
+            });
+
+            usersTableBody.addEventListener('click', async (e) => {
+                const target = e.target.closest('a');
+                if (!target) return;
+                e.preventDefault();
+
+                const userId = target.dataset.userId;
+                if (!userId) return;
+
+                if (target.classList.contains('action-delete')) {
+                    if (confirm('Are you sure you want to delete this user? This is a soft delete.')) {
+                        try {
+                            const response = await fetch(`/users/${userId}`, { method: 'DELETE' });
+                            if (!response.ok) throw new Error('Failed to delete user.');
+                            fetchAndRenderUsers();
+                        } catch (error) {
+                            console.error('Error during Delete action:', error);
+                            alert(`Error: ${error.message}`);
+                        }
+                    }
+                } else if (target.classList.contains('action-edit') || target.classList.contains('action-view')) {
+                    try {
+                        const response = await fetch(`/users/${userId}`);
+                        if (!response.ok) throw new Error('Failed to fetch user data.');
+                        
+                        const user = await response.json();
+                        if (!user) throw new Error('User not found on server.');
+
+                        if (target.classList.contains('action-edit')) {
+                            const existingForm = newUserFormContainer.querySelector('#user-form');
+                            if (existingForm && existingForm.dataset.userId === userId) {
+                                hideCard();
+                            } else {
+                                showCard(createForm(user));
+                            }
+                        } else if (target.classList.contains('action-view')) {
+                            showCard(createView(user));
+                        }
+                    } catch (error) {
+                        console.error('Error fetching user for edit/view:', error);
+                        alert(`Error: ${error.message}`);
+                    }
+                }
+            });
+        });
+    }
+</script>

@@ -1,7 +1,10 @@
-<footer class="mt-auto py-6 bg-white border-t">
-    <div class="container mx-auto px-4">
-        <div class="text-center text-gray-600 text-sm">
-            <p>&copy; <%= new Date().getFullYear() %> StartupConnect. All rights reserved.</p>
+<% if (path !== '/dashboard') { %>
+</main>
+<% } %>
+
+<footer class="bg-white border-t mt-auto">
+    <div class="container mx-auto py-4 px-4 text-center text-gray-600">
+        &copy; <%= new Date().getFullYear() %> StartupConnect. All rights reserved.
             <p class="mt-2">
                 <a href="#" class="hover:text-primary-dark">Privacy Policy</a>
                 <span class="mx-2">•</span>

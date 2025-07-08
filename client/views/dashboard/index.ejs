@@ -1,69 +1,488 @@
 <%- include('../partials/header') %>
 
-<div class="container mx-auto px-4 py-8">
-    <div class="mb-8">
-        <h1 class="text-3xl font-bold text-gray-900">Welcome, <%= user.name %></h1>
-        <p class="text-gray-600 mt-2">Your role: <%= role.charAt(0).toUpperCase() + role.slice(1) %></p>
-    </div>
+<div class="flex flex-col min-h-screen">
+    <%- include('../partials/_dashboard_header') %>
 
-    <% if (role === 'founder') { %>
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-            <div class="bg-white rounded-lg shadow p-6">
-                <h3 class="text-lg font-semibold text-gray-700">Active Projects</h3>
-                <p class="text-3xl font-bold text-primary mt-2"><%= activeProjects %></p>
-            </div>
-            <div class="bg-white rounded-lg shadow p-6">
-                <h3 class="text-lg font-semibold text-gray-700">Total Investment</h3>
-                <p class="text-3xl font-bold text-primary mt-2">Kshs<%= totalInvestment.toLocaleString() %></p>
-            </div>
-            <div class="bg-white rounded-lg shadow p-6">
-                <h3 class="text-lg font-semibold text-gray-700">Total Collaborators</h3>
-                <p class="text-3xl font-bold text-primary mt-2"><%= totalCollaborators %></p>
-            </div>
+    <% if (role === 'admin') { %>
+        <!-- Admin Dashboard -->
+        <div class="flex flex-1 bg-gray-100">
+            <!-- Sidebar -->
+            <aside class="w-64 bg-white shadow-2xl flex flex-col">
+                <nav class="flex-grow p-4 mt-4">
+                    <ul class="space-y-4">
+                        <li>
+                            <button class="w-full flex items-center p-3 rounded-lg font-semibold text-gray-700 hover:bg-primary hover:text-white transition-colors duration-200 sidebar-button" data-section="all-projects">
+                                <svg class="w-6 h-6 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z"></path></svg>
+                                All Projects
+                            </button>
+                        </li>
+                        <li>
+                            <button class="w-full flex items-center p-3 rounded-lg font-semibold text-gray-700 hover:bg-primary hover:text-white transition-colors duration-200 sidebar-button" data-section="user-management">
+                                <svg class="w-6 h-6 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.653-.121-1.28-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.653.121-1.28.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"></path></svg>
+                                User Management
+                            </button>
+                        </li>
+                        <li>
+                            <button class="w-full flex items-center p-3 rounded-lg font-semibold text-gray-700 hover:bg-primary hover:text-white transition-colors duration-200 sidebar-button" data-section="application-management">
+                                <svg class="w-6 h-6 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
+                                Application Management
+                            </button>
+                        </li>
+                        <li>
+                            <button class="w-full flex items-center p-3 rounded-lg font-semibold text-gray-700 hover:bg-primary hover:text-white transition-colors duration-200 sidebar-button" data-section="analytics-reporting">
+                                <svg class="w-6 h-6 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 3.055A9.001 9.001 0 1020.945 13H11V3.055z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.488 9H15V3.512A9.025 9.025 0 0120.488 9z"></path></svg>
+                                Analytics & Reporting
+                            </button>
+                        </li>
+                    </ul>
+                </nav>
+            </aside>
+
+            <!-- Main Content -->
+            <main class="flex-1 p-8">
+                <div class="mb-8">
+                    <h1 class="text-3xl font-bold text-gray-900">Welcome, <%= user.name %>!</h1>
+                    <p class="text-gray-600 mt-1">Here's the latest overview of your platform.</p>
+                </div>
+
+                <!-- Stats Cards -->
+                <div id="stats-cards-container" class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6 mb-8">
+                    <div class="bg-white rounded-lg shadow-md p-6">
+                        <h3 class="text-lg font-semibold text-gray-700">Total Users</h3>
+                        <p class="text-3xl font-bold text-primary mt-2"><%= totalUsers %></p>
+                    </div>
+                    <div class="bg-white rounded-lg shadow-md p-6">
+                        <h3 class="text-lg font-semibold text-gray-700">Total Projects</h3>
+                        <p class="text-3xl font-bold text-primary mt-2"><%= totalProjects %></p>
+                    </div>
+                    <div class="bg-white rounded-lg shadow-md p-6">
+                        <h3 class="text-lg font-semibold text-gray-700">Total Investment</h3>
+                        <p class="text-3xl font-bold text-primary mt-2">Kshs<%= totalInvestment.toLocaleString() %></p>
+                    </div>
+                </div>
+
+                <!-- Dynamic Sections -->
+                <div id="all-projects" class="dashboard-section bg-white rounded-lg shadow-md p-6">
+                    <h2 class="text-2xl font-bold text-gray-900 mb-6">All Projects</h2>
+                    <%
+                    const getProjectStatusColor = (status) => {
+                        switch (status) {
+                            case 'active': return 'bg-green-100 text-green-800';
+                            case 'funded': return 'bg-blue-100 text-blue-800';
+                            case 'completed': return 'bg-gray-100 text-gray-800';
+                            default: return 'bg-yellow-100 text-yellow-800';
+                        }
+                    };
+                    %>
+                    <div class="overflow-x-auto">
+                        <table class="w-full divide-y divide-gray-200">
+                            <thead class="bg-gray-50">
+                                <tr>
+                                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Project</th>
+                                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Founder</th>
+                                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Funding Goal</th>
+                                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Funding Raised</th>
+                                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+                                    <th scope="col" class="relative px-6 py-3"><span class="sr-only">Actions</span></th>
+                                </tr>
+                            </thead>
+                            <tbody class="bg-white divide-y divide-gray-200">
+                                <% if (projects && projects.length > 0) { %>
+                                    <% projects.forEach(project => { %>
+                                        <tr>
+                                            <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900"><%= project.title %></td>
+                                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500"><%= project.founderName %></td>
+                                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">Kshs<%= (project.fundingGoal || 0).toLocaleString() %></td>
+                                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">Kshs<%= (project.fundingRaised || 0).toLocaleString() %></td>
+                                            <td class="px-6 py-4 whitespace-nowrap">
+                                                <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full <%= getProjectStatusColor(project.status) %>">
+                                                    <%= project.status %>
+                                                </span>
+                                            </td>
+                                            <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium"><a href="/projects/<%= project.id %>" class="text-primary hover:text-primary-dark">View</a></td>
+                                        </tr>
+                                    <% }); %>
+                                <% } else { %>
+                                    <tr>
+                                        <td colspan="6" class="px-6 py-4 whitespace-nowrap text-center text-sm text-gray-500">No projects found.</td>
+                                    </tr>
+                                <% } %>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <div id="user-management" class="dashboard-section" style="display: none;">
+                    <%- include('./partials/admin-users') %>
+                </div>
+
+                <div id="application-management" class="dashboard-section" style="display: none;">
+                    <%- include('./partials/admin-applications') %>
+                </div>
+
+                <div id="analytics-reporting" class="dashboard-section" style="display: none;">
+                    <%- include('./partials/admin-analytics') %>
+                </div>
+            </main>
         </div>
 
-        <div class="flex justify-between items-center mb-6">
-            <h2 class="text-2xl font-bold text-gray-900">Your Projects</h2>
-            <a href="/dashboard/projects/new" class="bg-primary hover:bg-primary-dark text-white px-4 py-2 rounded-md">Create New Project</a>
-        </div>
-    <% } else if (role === 'investor') { %>
-        <div class="flex justify-between items-center mb-6">
-            <h2 class="text-2xl font-bold text-gray-900">Investment Opportunities</h2>
-            <div class="flex space-x-4">
-                <button class="bg-gray-100 hover:bg-gray-200 text-gray-800 px-4 py-2 rounded-md">Filter</button>
-                <button class="bg-gray-100 hover:bg-gray-200 text-gray-800 px-4 py-2 rounded-md">Sort</button>
-            </div>
-        </div>
-    <% } else if (role === 'collaborator') { %>
-        <div class="flex justify-between items-center mb-6">
-            <h2 class="text-2xl font-bold text-gray-900">Collaboration Opportunities</h2>
-            <div class="flex space-x-4">
-                <button class="bg-gray-100 hover:bg-gray-200 text-gray-800 px-4 py-2 rounded-md">Filter by Skills</button>
-                <button class="bg-gray-100 hover:bg-gray-200 text-gray-800 px-4 py-2 rounded-md">Sort</button>
-            </div>
-        </div>
-    <% } %>
+        <style>
+            .sidebar-button.active {
+                background-color: #4F46E5; /* primary color */
+                color: white;
+            }
+            .sidebar-button.active svg {
+                stroke: white;
+            }
+        </style>
 
-    <% if (projects && projects.length > 0) { %>
-        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            <% projects.forEach(project => { %>
-                <%- include('../partials/projectCard', { project: project }) %>
-            <% }); %>
-        </div>
+        <script>
+            document.addEventListener('DOMContentLoaded', () => {
+                const buttons = document.querySelectorAll('.sidebar-button');
+                const sections = document.querySelectorAll('.dashboard-section');
+                const statsContainer = document.getElementById('stats-cards-container');
+
+                function showSection(sectionId) {
+                    sections.forEach(section => {
+                        section.style.display = section.id === sectionId ? 'block' : 'none';
+                    });
+
+                    buttons.forEach(button => {
+                        if (button.dataset.section === sectionId) {
+                            button.classList.add('active');
+                        } else {
+                            button.classList.remove('active');
+                        }
+                    });
+
+                    // Show/hide stats based on section
+                    if (sectionId === 'analytics-reporting') {
+                        statsContainer.style.display = 'none';
+                    } else {
+                        statsContainer.style.display = 'grid'; // 'grid' to restore its layout
+                    }
+                }
+
+                buttons.forEach(button => {
+                    button.addEventListener('click', () => {
+                        showSection(button.dataset.section);
+                    });
+                });
+                
+                const userMenuButton = document.getElementById('user-menu-button');
+                const userMenu = document.getElementById('user-menu');
+
+                if(userMenuButton) {
+                    userMenuButton.addEventListener('click', () => {
+                        userMenu.classList.toggle('hidden');
+                    });
+
+                    window.addEventListener('click', (e) => {
+                        if (!userMenuButton.contains(e.target) && !userMenu.contains(e.target)) {
+                            userMenu.classList.add('hidden');
+                        }
+                    });
+                }
+
+                // Show the first section by default
+                showSection('all-projects');
+            });
+        </script>
+
     <% } else { %>
-        <div class="bg-white rounded-lg shadow-sm p-8 text-center">
-            <h3 class="text-xl font-semibold text-gray-700 mb-2">No Projects Found</h3>
-            <p class="text-gray-600">
-                <% if (role === 'founder') { %>
-                    Start by creating your first project!
-                <% } else if (role === 'investor') { %>
-                    Check back later for new investment opportunities.
-                <% } else if (role === 'collaborator') { %>
-                    Check back later for new collaboration opportunities.
-                <% } %>
-            </p>
-        </div>
+        <!-- Non-Admin Dashboard (Founder, Investor, Collaborator) -->
+
+        <% if (role === 'founder') { %>
+            <!-- New Founder Dashboard Layout -->
+            <main class="flex-1 bg-gray-50 p-6 md:p-8">
+                <!-- Header -->
+                <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-8">
+                    <div>
+                        <h1 class="text-3xl font-bold text-gray-900">Welcome back, <%= user.name %>!</h1>
+                        <p class="text-md text-gray-600 mt-1">Here's a snapshot of your projects and their performance.</p>
+                    </div>
+                    <a href="/projects/new" class="mt-4 md:mt-0 bg-primary text-white px-5 py-2.5 rounded-lg text-sm font-semibold hover:bg-primary-dark transition-colors">Create New Project</a>
+                </div>
+
+                <!-- Stats Grid -->
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+                    <!-- Total Funding Card -->
+                    <div class="bg-white p-6 rounded-2xl shadow-sm flex justify-between items-start">
+                        <div>
+                            <p class="text-gray-500 text-sm">Total Funding</p>
+                            <p class="text-3xl font-bold text-gray-800 mt-1">$<%= (stats.totalFunding || 0).toLocaleString() %></p>
+                            <p class="text-gray-400 text-xs mt-1">of $350K goal</p>
+                        </div>
+                        <div class="bg-green-100 p-3 rounded-xl">
+                            <svg class="w-5 h-5 text-green-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M12 6v12m-3-6h6" /></svg>
+                        </div>
+                    </div>
+
+                    <!-- Active Projects Card -->
+                    <div class="bg-white p-6 rounded-2xl shadow-sm flex justify-between items-start">
+                        <div>
+                            <p class="text-gray-500 text-sm">Active Projects</p>
+                            <p class="text-3xl font-bold text-gray-800 mt-1"><%= stats.activeProjects %></p>
+                            <p class="text-green-500 text-xs mt-1">+1 this month</p>
+                        </div>
+                        <div class="bg-blue-100 p-3 rounded-xl">
+                            <svg class="w-5 h-5 text-blue-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                        </div>
+                    </div>
+
+                    <!-- Applications Card -->
+                    <div class="bg-white p-6 rounded-2xl shadow-sm flex justify-between items-start">
+                        <div>
+                            <p class="text-gray-500 text-sm">Applications</p>
+                            <p class="text-3xl font-bold text-gray-800 mt-1"><%= (stats.totalApplications || 0).toLocaleString() %></p>
+                            <p class="text-green-500 text-xs mt-1">+5 this week</p>
+                        </div>
+                        <div class="bg-purple-100 p-3 rounded-xl">
+                           <svg class="w-5 h-5 text-purple-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M15 21a6 6 0 00-9-5.197m0 0A5.975 5.975 0 0112 13a5.975 5.975 0 013 1.803M15 21a9 9 0 00-3-5.647" /></svg>
+                        </div>
+                    </div>
+
+                    <!-- Profile Views Card -->
+                    <div class="bg-white p-6 rounded-2xl shadow-sm flex justify-between items-start">
+                        <div>
+                            <p class="text-gray-500 text-sm">Profile Views</p>
+                            <p class="text-3xl font-bold text-gray-800 mt-1"><%= (stats.totalViews || 0).toLocaleString() %></p>
+                            <p class="text-green-500 text-xs mt-1">+12% this week</p>
+                        </div>
+                        <div class="bg-yellow-100 p-3 rounded-xl">
+                            <svg class="w-5 h-5 text-yellow-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /><path stroke-linecap="round" stroke-linejoin="round" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" /></svg>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Tabs Navigation -->
+                <div class="mb-8">
+                    <div class="bg-gray-100 rounded-xl p-2 flex justify-center space-x-4 max-w-lg mx-auto">
+                        <button class="dashboard-tab-button dashboard-tab px-8 py-3 rounded-lg text-base font-semibold focus:outline-none transition-all" data-tab="projects">Projects</button>
+                        <button class="dashboard-tab-button dashboard-tab px-8 py-3 rounded-lg text-base font-semibold focus:outline-none transition-all" data-tab="applications">Applications</button>
+                        <button class="dashboard-tab-button dashboard-tab px-8 py-3 rounded-lg text-base font-semibold focus:outline-none transition-all" data-tab="analytics">Analytics</button>
+                    </div>
+                </div>
+
+                <!-- Tab Content -->
+                <div id="projects-content" class="dashboard-content">
+                    <div class="flex justify-between items-center mb-6">
+                        <h2 class="text-2xl font-bold text-gray-900">Your Projects</h2>
+                    </div>
+                    <% if (projects && projects.length > 0) { %>
+                        <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                            <% projects.forEach(project => { %>
+                                <%- include('../partials/projectCard', { project: project }) %>
+                            <% }); %>
+                        </div>
+                    <% } else { %>
+                        <div class="bg-white rounded-xl border border-gray-200 p-8 text-center">
+                            <h3 class="text-xl font-semibold text-gray-800 mb-2">No Projects Found</h3>
+                            <p class="text-gray-500">Get started by creating your first project.</p>
+                        </div>
+                    <% } %>
+                </div>
+
+                <div id="applications-content" class="dashboard-content hidden">
+                    <h2 class="text-2xl font-bold text-gray-900 mb-6">Applications</h2>
+                    <div class="bg-white rounded-xl border border-gray-200 p-8 text-center">
+                        <h3 class="text-xl font-semibold text-gray-800 mb-2">No Applications Yet</h3>
+                        <p class="text-gray-500">When candidates apply to your projects, their applications will appear here.</p>
+                    </div>
+                </div>
+
+                <div id="analytics-content" class="dashboard-content hidden">
+                    <h2 class="text-3xl font-bold text-gray-900 mb-8">Analytics & Insights</h2>
+
+                    <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                        <!-- Funding Overview Card -->
+                        <div class="bg-white rounded-xl shadow-md p-8">
+                            <h3 class="text-xl font-bold text-gray-800">Funding Overview</h3>
+                            <p class="text-sm text-gray-500 mb-6">Track your fundraising progress</p>
+                            <div id="funding-overview-container" class="space-y-6">
+                                <p class="text-gray-500">Loading funding data...</p>
+                            </div>
+                        </div>
+
+                        <!-- Application Trends Card -->
+                        <div class="bg-white rounded-xl shadow-md p-8">
+                            <h3 class="text-xl font-bold text-gray-800">Application Trends</h3>
+                            <p class="text-sm text-gray-500 mb-6">Applications received over time</p>
+                            <div id="application-trends-container" class="space-y-4">
+                                <div class="flex justify-between items-center">
+                                    <p class="text-gray-600">This Week</p>
+                                    <p id="apps-this-week" class="font-semibold text-gray-800">-</p>
+                                </div>
+                                <div class="flex justify-between items-center">
+                                    <p class="text-gray-600">Last Week</p>
+                                    <p id="apps-last-week" class="font-semibold text-gray-800">-</p>
+                                </div>
+                                <div class="flex justify-between items-center">
+                                    <p class="text-gray-600">This Month</p>
+                                    <p id="apps-this-month" class="font-semibold text-gray-800">-</p>
+                                </div>
+                                <hr class="my-2 border-gray-200">
+                                <div class="flex justify-between items-center">
+                                    <p class="text-gray-600">Growth Rate</p>
+                                    <p id="apps-growth-rate" class="font-semibold text-green-500">-</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </main>
+        <% } else if (role === 'investor') { %>
+            <h2 class="text-2xl font-bold text-gray-900 mb-6">Investment Opportunities</h2>
+            <% if (projects && projects.length > 0) { %>
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                    <% projects.forEach(project => { %>
+                        <%- include('../partials/projectCard', { project: project }) %>
+                    <% }); %>
+                </div>
+            <% } else { %>
+                <div class="bg-white rounded-xl border border-gray-200 p-8 text-center">
+                    <h3 class="text-xl font-semibold text-gray-800 mb-2">No Projects Found</h3>
+                    <p class="text-gray-500">There are currently no projects seeking investment.</p>
+                </div>
+            <% } %>
+        <% } else if (role === 'collaborator') { %>
+            <h2 class="text-2xl font-bold text-gray-900 mb-6">Collaboration Opportunities</h2>
+            <% if (projects && projects.length > 0) { %>
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                    <% projects.forEach(project => { %>
+                        <%- include('../partials/projectCard', { project: project }) %>
+                    <% }); %>
+                </div>
+            <% } else { %>
+                <div class="bg-white rounded-xl border border-gray-200 p-8 text-center">
+                    <h3 class="text-xl font-semibold text-gray-800 mb-2">No Projects Found</h3>
+                    <p class="text-gray-500">Check back later for new collaboration opportunities.</p>
+                </div>
+            <% } %>
+        <% } %>
+
+
     <% } %>
 </div>
 
-<%- include('../partials/footer') %> 
+<script>
+    document.addEventListener('DOMContentLoaded', () => {
+        // User profile dropdown logic
+        const userMenuButton = document.getElementById('user-menu-button');
+        const userMenu = document.getElementById('user-menu');
+
+        if (userMenuButton && userMenu) {
+            userMenuButton.addEventListener('click', (event) => {
+                event.stopPropagation(); // Prevent the window click event from firing immediately
+                userMenu.classList.toggle('hidden');
+            });
+
+            // Close the dropdown if the user clicks outside of it
+            window.addEventListener('click', () => {
+                if (!userMenu.classList.contains('hidden')) {
+                    userMenu.classList.add('hidden');
+                }
+            });
+        }
+
+        // Tab switching logic
+        const tabButtons = document.querySelectorAll('.dashboard-tab-button');
+        const contentPanes = document.querySelectorAll('.dashboard-content');
+        let analyticsDataFetched = false;
+
+        // Function to handle tab switching
+        const switchTab = (tab) => {
+            const targetContentId = `${tab}-content`;
+
+            // Update button styles
+            tabButtons.forEach(button => {
+                if (button.dataset.tab === tab) {
+                    button.classList.add('bg-primary', 'text-white');
+                    button.classList.remove('text-gray-700', 'hover:bg-primary', 'hover:text-white');
+                } else {
+                    button.classList.remove('bg-primary', 'text-white');
+                    button.classList.add('text-gray-700', 'hover:bg-primary', 'hover:text-white');
+                }
+            });
+
+            // Show/hide content panes
+            contentPanes.forEach(pane => {
+                if (pane.id === targetContentId) {
+                    pane.classList.remove('hidden');
+                } else {
+                    pane.classList.add('hidden');
+                }
+            });
+
+            // Fetch analytics data if the analytics tab is selected
+            if (tab === 'analytics' && !analyticsDataFetched) {
+                fetchAndRenderAnalytics();
+            }
+        };
+
+        // Add click event listeners to all tab buttons
+        tabButtons.forEach(button => {
+            button.addEventListener('click', () => {
+                switchTab(button.dataset.tab);
+            });
+        });
+
+        const fetchAndRenderAnalytics = async () => {
+            if (analyticsDataFetched) return;
+
+            try {
+                const response = await fetch('/dashboard/analytics');
+                if (!response.ok) throw new Error('Failed to fetch analytics data');
+                const data = await response.json();
+                analyticsDataFetched = true;
+
+                // Render Application Trends
+                const trends = data.applicationTrends;
+                document.getElementById('apps-this-week').textContent = `${trends.thisWeek} applications`;
+                document.getElementById('apps-last-week').textContent = `${trends.lastWeek} applications`;
+                document.getElementById('apps-this-month').textContent = `${trends.thisMonth} applications`;
+                const growthRateEl = document.getElementById('apps-growth-rate');
+                const growthRate = trends.growthRate;
+                growthRateEl.textContent = `${growthRate >= 0 ? '+' : ''}${growthRate}%`;
+                growthRateEl.classList.toggle('text-red-500', growthRate < 0);
+                growthRateEl.classList.toggle('text-green-500', growthRate >= 0);
+
+                // Render Funding Overview
+                const fundingContainer = document.getElementById('funding-overview-container');
+                const overview = data.fundingOverview;
+                fundingContainer.innerHTML = ''; // Clear loading message
+
+                if (overview && overview.length > 0) {
+                    overview.forEach(project => {
+                        const projectEl = document.createElement('div');
+                        projectEl.innerHTML = `
+                            <div>
+                                <div class="flex justify-between items-center mb-2">
+                                    <span class="font-medium text-gray-700">${project.title}</span>
+                                    <span class="font-semibold text-gray-600">${project.percentage.toFixed(1)}%</span>
+                                </div>
+                                <div class="w-full bg-gray-200 rounded-full h-2">
+                                    <div class="bg-purple-600 h-2 rounded-full" style="width: ${project.percentage}%"></div>
+                                </div>
+                            </div>
+                        `;
+                        fundingContainer.appendChild(projectEl);
+                    });
+                } else {
+                    fundingContainer.innerHTML = '<p class="text-gray-500">No projects with funding goals found.</p>';
+                }
+            } catch (error) {
+                console.error('Error fetching analytics:', error);
+                const trendsContainer = document.getElementById('application-trends-container');
+                const fundingContainer = document.getElementById('funding-overview-container');
+                if (trendsContainer) trendsContainer.innerHTML = '<p class="text-red-500">Could not load application trends.</p>';
+                if (fundingContainer) fundingContainer.innerHTML = '<p class="text-red-500">Could not load funding overview.</p>';
+            }
+        };
+
+        // Initialize with the default 'projects' tab
+        switchTab('projects');
+    });
+</script>
+
+<%- include('../partials/footer') %>

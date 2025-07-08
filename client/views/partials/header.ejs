@@ -9,12 +9,17 @@
     <link href="/css/output.css" rel="stylesheet">
     
     <!-- Custom CSS -->
-    <link href="/css/style.css" rel="stylesheet">
+    <link rel="stylesheet" href="/css/styles.css">
+    
+    <!-- Chart.js for Analytics -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     
     <!-- Defer loading of JavaScript -->
     <script src="/js/main.js" defer></script>
 </head>
 <body class="min-h-screen bg-gray-50">
-    <%- include('./navbar') %>
-</body>
-</html> 
+    
+<% if (path !== '/dashboard') { %>
+    <%- include('navbar') %>
+    <main class="container mx-auto mt-8 p-4">
+<% } %> 
