@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title><%= title %></title>
+    <link rel="stylesheet" href="/css/output.css">
+    <script src="https://js.stripe.com/v3/"></script>
+</head>
+<body class="bg-gray-100">
+    <%- include('partials/header') %>
+
+    <main class="container mx-auto px-4 py-8">
+        <div class="max-w-md mx-auto bg-white rounded-lg shadow-md p-8">
+            <h1 class="text-2xl font-bold text-center mb-6">Unlock Full Access</h1>
+            <p class="text-center text-gray-600 mb-6">
+                Gain full access to all features by making a one-time payment.
+            </p>
+
+            <div class="bg-gray-200 p-4 rounded-lg mb-6 text-center">
+                <span class="text-3xl font-bold text-gray-800">$10.00</span>
+                <span class="text-gray-600">/ one-time</span>
+            </div>
+
+            <div class="text-center">
+                <button id="checkout-button" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline w-full">
+                    Pay with Card
+                </button>
+            </div>
+            <div id="payment-status" class="mt-4 text-center font-medium"></div>
+        </div>
+    </main>
+
+    <script>
+        const stripe = Stripe('<%= stripePublishableKey %>');
+        const checkoutButton = document.getElementById('checkout-button');
+        const statusDiv = document.getElementById('payment-status');
+
+        checkoutButton.addEventListener('click', async () => {
+            checkoutButton.disabled = true;
+            checkoutButton.textContent = 'Processing...';
+            statusDiv.textContent = '';
+
+            try {
+                const response = await fetch('/payment/create-checkout-session', {
+                    method: 'POST',
+                });
+
+                if (!response.ok) {
+                    throw new Error('Failed to create checkout session.');
+                }
+
+                const session = await response.json();
+                const result = await stripe.redirectToCheckout({ sessionId: session.id });
+
+                if (result.error) {
+                    throw new Error(result.error.message);
+                }
+            } catch (error) {
+                statusDiv.textContent = 'Error: ' + error.message;
+                statusDiv.className = 'text-red-600';
+                checkoutButton.disabled = false;
+                checkoutButton.textContent = 'Pay with Card';
+            }
+        });
+    </script>
+</body>
+</html>

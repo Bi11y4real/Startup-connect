@@ -3,6 +3,16 @@ const User = require('../models/user');
 const { db } = require('../config/firebase');
 const { doc, getDoc } = require('firebase/firestore');
 
+// Middleware to check if user has paid
+const isPaid = (req, res, next) => {
+    // This middleware must run after isAuthenticated
+    if (req.user && req.user.hasPaid) {
+        return next();
+    }
+    // If user has not paid, redirect them to the payment page
+    res.redirect('/payment');
+};
+
 // Middleware to check if user is authenticated
 const isAuthenticated = async (req, res, next) => {
     try {
@@ -163,6 +173,7 @@ const isProjectOwner = async (userId, projectId) => {
 };
 
 module.exports = {
+    isPaid,
     isAuthenticated,
     isNotAuthenticated,
     hasRole,
