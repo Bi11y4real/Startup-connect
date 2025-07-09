@@ -1,5 +1,4 @@
-<<<<<<< HEAD
-<div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6 flex items-start space-x-6">
+<div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6 flex items-start space-x-8">
     <!-- Left Column: Image -->
     <div class="flex-shrink-0">
         <img class="h-24 w-24 rounded-xl object-cover" src="<%= project.imageUrl || 'https://images.unsplash.com/photo-1556761175-5973dc0f32e7?q=80&w=2832&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D' %>" alt="<%= project.title %> logo">
@@ -45,85 +44,20 @@
             </div>
             <% const fundingPercentage = project.fundingGoal > 0 ? (project.fundingRaised / project.fundingGoal) * 100 : 0; %>
             <div class="w-full bg-gray-200 rounded-full h-2">
-                <div class="bg-purple-600 h-2 rounded-full" style="width: <%= `${fundingPercentage}%` %>"></div>
+                <div class="bg-primary h-2 rounded-full" style="width: <%= fundingPercentage %>%;"></div>
             </div>
         </div>
         
         <!-- Actions -->
-        <div class="grid grid-cols-2 gap-4 mt-4">
-            <a href="/projects/<%= project.id %>" class="w-full text-center px-4 py-2.5 border border-gray-300 rounded-lg text-sm font-semibold text-gray-800 hover:bg-gray-50">View Details</a>
-            <a href="/dashboard/projects/<%= project.id %>/edit" class="w-full text-center px-4 py-2.5 bg-primary text-white rounded-lg text-sm font-semibold hover:bg-primary-dark transition-colors">Manage</a>
-        </div>
-    </div>
-</div>
-=======
-<div class="bg-white rounded-lg shadow-sm hover:shadow-md transition-shadow duration-300 overflow-hidden">
-    <% if (project.imageUrl) { %>
-        <img src="<%= project.imageUrl %>" alt="<%= project.title %>" class="w-full h-48 object-cover">
-    <% } else { %>
-        <div class="w-full h-48 bg-gray-100 flex items-center justify-center">
-            <span class="text-4xl text-gray-400">🚀</span>
-        </div>
-    <% } %>
-    
-    <div class="p-6">
-        <div class="flex items-start justify-between">
-            <h3 class="text-lg font-semibold text-gray-900 mb-2">
-                <%= project.title %>
-            </h3>
-            <span class="px-2 py-1 text-xs font-medium bg-primary-light/10 text-primary-dark rounded-full">
-                <%= project.industry %>
-            </span>
-        </div>
-
-        <p class="text-gray-600 text-sm mb-4 line-clamp-2">
-            <%= project.description %>
-        </p>
-
-        <div class="flex items-center justify-between">
-            <div class="flex items-center space-x-2">
-                <img src="<%= project.founderAvatar || 'https://ui-avatars.com/api/?name=' + encodeURIComponent(project.founderName) %>" 
-                     alt="<%= project.founderName %>" 
-                     class="w-6 h-6 rounded-full">
-                <span class="text-sm text-gray-500">
-                    <%= project.founderName %>
-                </span>
-            </div>
-
-            <% if (project.fundingGoal) { %>
-                <div class="text-right">
-                    <div class="text-sm font-medium text-gray-900">
-                        Kshs<%= (project.fundingRaised || 0).toLocaleString() %> 
-                        <span class="text-gray-500">/ Kshs<%= project.fundingGoal.toLocaleString() %></span>
-                    </div>
-                    <% const progressWidth = Math.min((project.fundingRaised / project.fundingGoal * 100), 100).toFixed(1); %>
-                    <div class="w-24 h-1 bg-gray-200 rounded-full mt-1">
-                        <div class="h-full bg-primary rounded-full"
-                             style="width: <%= progressWidth + '%' %>">
-                        </div>
-                    </div>
+        <div class="mt-4">
+            <% if (role === 'collaborator') { %>
+                <a href="/projects/<%= project.id %>" class="w-full block text-center px-4 py-2.5 bg-primary text-white rounded-lg text-sm font-semibold hover:bg-primary-dark transition-colors">Join Project</a>
+            <% } else { %>
+                <div class="grid grid-cols-2 gap-4">
+                    <a href="/projects/<%= project.id %>" class="w-full text-center px-4 py-2.5 border border-gray-300 rounded-lg text-sm font-semibold text-gray-800 hover:bg-gray-50">View Details</a>
+                    <a href="/dashboard/projects/<%= project.id %>/edit" class="w-full text-center px-4 py-2.5 bg-primary text-white rounded-lg text-sm font-semibold hover:bg-primary-dark transition-colors">Manage</a>
                 </div>
             <% } %>
         </div>
-
-        <% if (project.skills && project.skills.length > 0) { %>
-            <div class="mt-4 flex flex-wrap gap-2">
-                <% project.skills.slice(0, 3).forEach(skill => { %>
-                    <span class="px-2 py-1 text-xs bg-gray-100 text-gray-600 rounded-full">
-                        <%= skill %>
-                    </span>
-                <% }); %>
-                <% if (project.skills.length > 3) { %>
-                    <span class="px-2 py-1 text-xs bg-gray-100 text-gray-600 rounded-full">
-                        +<%= project.skills.length - 3 %> more
-                    </span>
-                <% } %>
-            </div>
-        <% } %>
     </div>
-
-    <a href="/projects/<%= project.id %>" class="block p-4 text-center text-sm font-medium text-primary hover:text-primary-dark border-t">
-        View Details
-    </a>
-</div> 
->>>>>>> 226afc0ef0ecc132dc3f5a9ec1f23d5ffdff809a
+</div>

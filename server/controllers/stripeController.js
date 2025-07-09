@@ -1,7 +1,15 @@
 const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY);
 const User = require('../models/user');
+const Project = require('../models/project'); // Import Project model
 
 const createCheckoutSession = async (req, res) => {
+    const { projectId, amount, projectName } = req.body;
+    const amountInCents = Math.round(parseFloat(amount) * 100);
+
+    if (!projectId || !amount || !projectName || amountInCents <= 0) {
+        return res.status(400).send('Missing required investment data.');
+    }
+
     try {
         const session = await stripe.checkout.sessions.create({
             payment_method_types: ['card'],
@@ -9,17 +17,21 @@ const createCheckoutSession = async (req, res) => {
                 price_data: {
                     currency: 'usd',
                     product_data: {
-                        name: 'Startup Connect - Full Access',
-                        description: 'One-time payment for lifetime access to all features.',
+                        name: `Investment in ${projectName}`,
+                        description: `Project ID: ${projectId}`,
                     },
-                    unit_amount: 1000, // This is in cents, so $10.00
+                    unit_amount: amountInCents,
                 },
                 quantity: 1,
             }],
             mode: 'payment',
             success_url: `${req.protocol}://${req.get('host')}/dashboard?payment_success=true`,
-            cancel_url: `${req.protocol}://${req.get('host')}/payment?payment_cancelled=true`,
-            client_reference_id: req.user.id // Pass the user's ID to the session
+            cancel_url: `${req.protocol}://${req.get('host')}/projects/${projectId}?payment_cancelled=true`,
+            client_reference_id: req.user.id,
+            metadata: {
+                projectId: projectId,
+                amount: amount
+            }
         });
 
         res.json({ id: session.id });
@@ -30,7 +42,6 @@ const createCheckoutSession = async (req, res) => {
 };
 
 const stripeWebhook = async (req, res) => {
-    // Use raw body for webhook signature verification
     const sig = req.headers['stripe-signature'];
     let event;
 
@@ -41,30 +52,31 @@ const stripeWebhook = async (req, res) => {
         return res.status(400).send(`Webhook Error: ${err.message}`);
     }
 
-    // Handle the checkout.session.completed event
     if (event.type === 'checkout.session.completed') {
         const session = event.data.object;
-
-        // Enhanced logging to debug payment status updates
-        console.log('Webhook received for checkout.session.completed.');
-        console.log('Full Stripe Session Object:', JSON.stringify(session, null, 2));
-
+        const { projectId, amount } = session.metadata;
         const userId = session.client_reference_id;
+        const amountNumber = parseFloat(amount);
 
-        if (userId) {
-            console.log(`Payment successful for user: ${userId}`);
+        console.log('Webhook received for investment payment.');
+
+        if (userId && projectId && amountNumber > 0) {
             try {
+                // Record the investment in the project
+                await Project.addInvestment(projectId, userId, amountNumber);
+                console.log(`Investment of ${amountNumber} for project ${projectId} by user ${userId} recorded.`);
+
+                // Optionally, update the user model as well if needed
                 await User.update(userId, { 
-                    hasPaid: true,
-                    paymentDate: new Date(),
-                    stripeCustomerId: session.customer,
+                    lastInvestmentDate: new Date(),
                 });
-                console.log(`User ${userId} marked as paid.`);
+                console.log(`User ${userId} updated with last investment date.`);
+
             } catch (error) {
-                console.error(`Failed to update user ${userId} in database:`, error);
+                console.error(`Failed to process investment for user ${userId} and project ${projectId}:`, error);
             }
         } else {
-            console.error('CRITICAL: Webhook received but no client_reference_id (userId) found in session. User payment status was NOT updated.');
+            console.error('CRITICAL: Webhook received but missing required metadata for investment.');
         }
     }
 

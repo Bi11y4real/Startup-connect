@@ -1,4 +1,5 @@
 const { db } = require('../config/firebase');
+const Investment = require('./investment'); // Import the new Investment model
 const { 
     collection, 
     doc, 
@@ -60,6 +61,7 @@ class Project {
                 fundingGoal: projectData.fundingGoal || 0,
                 collaborators: [],
                 investors: [],
+                investorIds: [], // For querying
                 tags: projectData.tags || [], // e.g., ['FinTech', 'AI', 'MVP']
                 openRoles: projectData.openRoles || [], // e.g., ['Frontend Developer', 'Marketing Manager']
                 likes: 0,
@@ -202,35 +204,51 @@ class Project {
 
     static async getAll() {
         try {
-            const q = query(
-                collection(db, COLLECTION_NAME),
-                orderBy('createdAt', 'desc')
-            );
+            const projectsRef = collection(db, COLLECTION_NAME);
+            const q = query(projectsRef, orderBy('createdAt', 'desc'));
             const querySnapshot = await getDocs(q);
 
+            // Use Promise.all to fetch all projects and their founders concurrently
             const projects = await Promise.all(querySnapshot.docs.map(async (doc) => {
                 const data = doc.data();
-                
-                let founderName = 'Unknown';
+
+                // Fetch founder details
+                let founder = null;
                 if (data.founderId) {
                     try {
-                        const founder = await User.getById(data.founderId);
-                        if (founder) {
-                            founderName = founder.name;
-                        }
+                        founder = await User.getById(data.founderId);
                     } catch (userError) {
-                        console.error(`Could not fetch founder for project ${doc.id}`, userError);
+                        console.error(`Failed to fetch founder with ID: ${data.founderId}`, userError);
+                        // Assign a default/placeholder founder object to prevent render errors
+                        founder = { name: 'Unknown Founder', email: '' };
                     }
                 }
 
+                // Convert Firestore Timestamps to Dates
                 if (data.createdAt) {
                     data.createdAt = data.createdAt.toDate();
                 }
                 if (data.updatedAt) {
                     data.updatedAt = data.updatedAt.toDate();
                 }
+                // Convert investor timestamps
+                if (data.investors && Array.isArray(data.investors)) {
+                    data.investors = data.investors.map(investor => {
+                        if (investor.investedAt) {
+                            investor.investedAt = investor.investedAt.toDate();
+                        }
+                        if (investor.updatedAt) {
+                            investor.updatedAt = investor.updatedAt.toDate();
+                        }
+                        return investor;
+                    });
+                }
 
-                return { id: doc.id, ...data, founderName };
+                return { 
+                    id: doc.id, 
+                    ...data, 
+                    founder // Embed the founder object
+                };
             }));
 
             return projects;
@@ -374,9 +392,13 @@ class Project {
 
             await updateDoc(projectRef, {
                 investors,
+                investorIds: investors.map(i => i.userId),
                 fundingRaised: (project.fundingRaised || 0) + amount,
                 updatedAt: serverTimestamp()
             });
+
+            // Create a record in the centralized investments collection for analytics
+            await Investment.create(projectId, userId, amount);
 
             return true;
         } catch (error) {
@@ -505,6 +527,111 @@ class Project {
             return projects;
         } catch (error) {
             console.error('Error getting investment opportunities:', error);
+            throw error;
+        }
+    }
+
+    static async getPortfolioByInvestorId(investorId) {
+        try {
+            const q = query(collection(db, COLLECTION_NAME), where('investorIds', 'array-contains', investorId));
+            const querySnapshot = await getDocs(q);
+            return querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+        } catch (error) {
+            console.error('Error getting portfolio by investor ID:', error);
+            throw error;
+        }
+    }
+
+    static async getSectorAllocation(investorId) {
+        try {
+            const portfolio = await this.getPortfolioByInvestorId(investorId);
+            if (portfolio.length === 0) {
+                return [];
+            }
+
+            const sectorTotals = {};
+            let grandTotal = 0;
+
+            portfolio.forEach(project => {
+                const investment = project.investors.find(inv => inv.userId === investorId);
+                if (investment && project.sector) {
+                    const amount = investment.amount;
+                    sectorTotals[project.sector] = (sectorTotals[project.sector] || 0) + amount;
+                    grandTotal += amount;
+                }
+            });
+
+            if (grandTotal === 0) {
+                return [];
+            }
+
+            const allocation = Object.entries(sectorTotals).map(([sector, total]) => ({
+                sector,
+                percentage: Math.round((total / grandTotal) * 100)
+            }));
+
+            return allocation.sort((a, b) => b.percentage - a.percentage);
+        } catch (error) {
+            console.error('Error getting sector allocation:', error);
+            throw error;
+        }
+    }
+
+    static async getInvestorStats(investorId) {
+        try {
+            const q = query(collection(db, COLLECTION_NAME), where('investorIds', 'array-contains', investorId));
+            const querySnapshot = await getDocs(q);
+
+            let totalInvested = 0;
+            let activeDeals = 0;
+
+            querySnapshot.forEach(doc => {
+                const project = doc.data();
+                const investment = project.investors.find(inv => inv.userId === investorId);
+                if (investment) {
+                    totalInvested += investment.amount;
+                }
+                if (project.status === 'active') {
+                    activeDeals++;
+                }
+            });
+
+            return {
+                totalInvested,
+                activeDeals,
+                totalDeals: querySnapshot.size
+            };
+        } catch (error) {
+            console.error('Error getting investor stats:', error);
+            throw error;
+        }
+    }
+
+    static async getCollaboratorStats(collaboratorId) {
+        try {
+            const projects = await this.getProjectsByCollaboratorId(collaboratorId);
+            
+            const activeProjects = projects.filter(p => p.status === 'active').length;
+            const totalProjects = projects.length;
+
+            // In the future, we can add tasks assigned, etc.
+            return {
+                activeProjects,
+                totalProjects
+            };
+        } catch (error) {
+            console.error('Error getting collaborator stats:', error);
+            throw error;
+        }
+    }
+
+    static async getProjectsByCollaboratorId(collaboratorId) {
+        try {
+            const q = query(collection(db, COLLECTION_NAME), where('collaborators', 'array-contains', collaboratorId));
+            const querySnapshot = await getDocs(q);
+            return querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+        } catch (error) {
+            console.error('Error getting projects by collaborator ID:', error);
             throw error;
         }
     }

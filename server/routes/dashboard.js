@@ -5,6 +5,7 @@ const path = require('path');
 const { auth } = require('../config/firebase');
 const User = require('../models/user');
 const Project = require('../models/project');
+const Application = require('../models/application');
 const Analytics = require('../models/analytics');
 const { isAuthenticated } = require('../middleware/auth');
 
@@ -59,20 +60,37 @@ router.get('/', isAuthenticated, async (req, res) => {
                 break;
 
             case 'investor':
-                // Get investment opportunities
+                // Get investment opportunities and stats
+                const investorStats = await Project.getInvestorStats(req.user.id);
                 const availableProjects = await Project.getAvailableForInvestment();
+                const portfolioProjects = await Project.getPortfolioByInvestorId(req.user.id);
+                const sectorAllocation = await Project.getSectorAllocation(req.user.id);
                 viewData = {
                     ...viewData,
-                    projects: availableProjects
+                    user: req.user, // Pass user object for welcome message
+                    projects: availableProjects,
+                    portfolio: portfolioProjects,
+                    stats: investorStats,
+                    analytics: {
+                        sectorAllocation
+                    }
                 };
                 break;
 
             case 'collaborator':
                 // Get collaboration opportunities
-                const collaborationProjects = await Project.getAvailableForCollaboration();
+                const myProjects = await Project.getProjectsByCollaboratorId(req.user.id);
+                const opportunities = await Project.getAvailableForCollaboration();
+                const collaboratorStats = await Project.getCollaboratorStats(req.user.id);
+                const myApplications = await Application.getApplicationsByUserId(req.user.id);
+
                 viewData = {
                     ...viewData,
-                    projects: collaborationProjects
+                    user: req.user,
+                    myProjects,
+                    opportunities,
+                    stats: collaboratorStats,
+                    myApplications
                 };
                 break;
 

@@ -43,15 +43,11 @@ const indexRoutes = require('./server/routes/index');
 const authRoutes = require('./server/routes/auth');
 const projectRoutes = require('./server/routes/projects');
 const dashboardRoutes = require('./server/routes/dashboard');
-<<<<<<< HEAD
 const collaborationsRoutes = require('./server/routes/collaborations');
 const applicationsRoutes = require('./server/routes/applications');
 const analyticsRoutes = require('./server/routes/analytics');
 const usersRoutes = require('./server/routes/users');
-=======
-const collaborationsRoutes =require('./server/routes/collaborations');
 const paymentRoutes = require('./server/routes/payment');
->>>>>>> 226afc0ef0ecc132dc3f5a9ec1f23d5ffdff809a
 
 // Public routes
 app.use('/', indexRoutes);
@@ -61,14 +57,10 @@ app.use('/auth', authRoutes);
 app.use('/projects', isAuthenticated, isPaid, projectRoutes);
 app.use('/dashboard', isAuthenticated, dashboardRoutes);
 app.use('/collaborations', isAuthenticated, collaborationsRoutes);
-<<<<<<< HEAD
 app.use('/applications', isAuthenticated, applicationsRoutes);
 app.use('/analytics', isAuthenticated, analyticsRoutes);
 app.use('/users', isAuthenticated, usersRoutes);
-// app.use('/profile', userRoutes);
-=======
 app.use('/payment', paymentRoutes); // The routes inside payment.js already handle isAuthenticated
->>>>>>> 226afc0ef0ecc132dc3f5a9ec1f23d5ffdff809a
 
 // Error handler
 app.use((err, req, res, next) => {

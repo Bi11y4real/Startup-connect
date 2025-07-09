@@ -25,7 +25,7 @@
                         <li>
                             <button class="w-full flex items-center p-3 rounded-lg font-semibold text-gray-700 hover:bg-primary hover:text-white transition-colors duration-200 sidebar-button" data-section="application-management">
                                 <svg class="w-6 h-6 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
-                                Application Management
+                                <span class="whitespace-nowrap">Application Management</span>
                             </button>
                         </li>
                         <li>
@@ -48,12 +48,12 @@
                 <!-- Stats Cards -->
                 <div id="stats-cards-container" class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6 mb-8">
                     <div class="bg-white rounded-lg shadow-md p-6">
-                        <h3 class="text-lg font-semibold text-gray-700">Total Users</h3>
-                        <p class="text-3xl font-bold text-primary mt-2"><%= totalUsers %></p>
-                    </div>
-                    <div class="bg-white rounded-lg shadow-md p-6">
                         <h3 class="text-lg font-semibold text-gray-700">Total Projects</h3>
                         <p class="text-3xl font-bold text-primary mt-2"><%= totalProjects %></p>
+                    </div>
+                    <div class="bg-white rounded-lg shadow-md p-6">
+                        <h3 class="text-lg font-semibold text-gray-700">Total Users</h3>
+                        <p class="text-3xl font-bold text-primary mt-2"><%= totalUsers %></p>
                     </div>
                     <div class="bg-white rounded-lg shadow-md p-6">
                         <h3 class="text-lg font-semibold text-gray-700">Total Investment</h3>
@@ -62,53 +62,39 @@
                 </div>
 
                 <!-- Dynamic Sections -->
-                <div id="all-projects" class="dashboard-section bg-white rounded-lg shadow-md p-6">
+                <div id="all-projects" class="dashboard-section">
                     <h2 class="text-2xl font-bold text-gray-900 mb-6">All Projects</h2>
-                    <%
-                    const getProjectStatusColor = (status) => {
-                        switch (status) {
-                            case 'active': return 'bg-green-100 text-green-800';
-                            case 'funded': return 'bg-blue-100 text-blue-800';
-                            case 'completed': return 'bg-gray-100 text-gray-800';
-                            default: return 'bg-yellow-100 text-yellow-800';
-                        }
-                    };
-                    %>
-                    <div class="overflow-x-auto">
-                        <table class="w-full divide-y divide-gray-200">
-                            <thead class="bg-gray-50">
-                                <tr>
-                                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Project</th>
-                                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Founder</th>
-                                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Funding Goal</th>
-                                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Funding Raised</th>
-                                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
-                                    <th scope="col" class="relative px-6 py-3"><span class="sr-only">Actions</span></th>
-                                </tr>
-                            </thead>
-                            <tbody class="bg-white divide-y divide-gray-200">
-                                <% if (projects && projects.length > 0) { %>
+                    <div class="bg-white rounded-lg shadow-md">
+                        <div class="overflow-x-auto">
+                            <table class="w-full divide-y divide-gray-200">
+                                <thead class="bg-gray-50">
+                                    <tr>
+                                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Project</th>
+                                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Founder</th>
+                                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Funding Goal</th>
+                                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Funding Raised</th>
+                                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+                                        <th scope="col" class="relative px-6 py-3"><span class="sr-only">Actions</span></th>
+                                    </tr>
+                                </thead>
+                                <tbody class="bg-white divide-y divide-gray-200">
                                     <% projects.forEach(project => { %>
                                         <tr>
                                             <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900"><%= project.title %></td>
-                                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500"><%= project.founderName %></td>
-                                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">Kshs<%= (project.fundingGoal || 0).toLocaleString() %></td>
-                                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">Kshs<%= (project.fundingRaised || 0).toLocaleString() %></td>
+                                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500"><%= project.founder.name %></td>
+                                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">$<%= (project.fundingGoal || 0).toLocaleString() %></td>
+                                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">$<%= (project.fundingRaised || 0).toLocaleString() %></td>
                                             <td class="px-6 py-4 whitespace-nowrap">
-                                                <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full <%= getProjectStatusColor(project.status) %>">
+                                                <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">
                                                     <%= project.status %>
                                                 </span>
                                             </td>
                                             <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium"><a href="/projects/<%= project.id %>" class="text-primary hover:text-primary-dark">View</a></td>
                                         </tr>
                                     <% }); %>
-                                <% } else { %>
-                                    <tr>
-                                        <td colspan="6" class="px-6 py-4 whitespace-nowrap text-center text-sm text-gray-500">No projects found.</td>
-                                    </tr>
-                                <% } %>
-                            </tbody>
-                        </table>
+                                </tbody>
+                            </table>
+                        </div>
                     </div>
                 </div>
 
@@ -121,71 +107,178 @@
                 </div>
 
                 <div id="analytics-reporting" class="dashboard-section" style="display: none;">
-                    <%- include('./partials/admin-analytics') %>
+                    <h2 class="text-2xl font-bold text-gray-900 mb-6">Analytics & Reporting</h2>
+                    <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                        <div class="bg-white rounded-lg shadow-md p-6">
+                            <h3 class="text-lg font-semibold text-gray-800 mb-4">User Registrations (Last 30 Days)</h3>
+                            <canvas id="userRegistrationsChart"></canvas>
+                        </div>
+                        <div class="bg-white rounded-lg shadow-md p-6">
+                            <h3 class="text-lg font-semibold text-gray-800 mb-4">Projects by Industry</h3>
+                            <canvas id="projectsByIndustryChart"></canvas>
+                        </div>
+                        <div class="bg-white rounded-lg shadow-md p-6">
+                            <h3 class="text-lg font-semibold text-gray-800 mb-4">Application Status Distribution</h3>
+                            <div class="max-w-xs mx-auto">
+                                <canvas id="applicationStatusChart"></canvas>
+                            </div>
+                        </div>
+                        <div class="bg-white rounded-lg shadow-md p-6">
+                            <h3 class="text-lg font-semibold text-gray-800 mb-4">Funding Activity (Last 30 Days)</h3>
+                            <canvas id="fundingActivityChart"></canvas>
+                        </div>
+                    </div>
                 </div>
             </main>
         </div>
 
-        <style>
-            .sidebar-button.active {
-                background-color: #4F46E5; /* primary color */
-                color: white;
-            }
-            .sidebar-button.active svg {
-                stroke: white;
-            }
-        </style>
-
         <script>
             document.addEventListener('DOMContentLoaded', () => {
-                const buttons = document.querySelectorAll('.sidebar-button');
-                const sections = document.querySelectorAll('.dashboard-section');
-                const statsContainer = document.getElementById('stats-cards-container');
+                const sidebarButtons = document.querySelectorAll('.sidebar-button');
+                const dashboardSections = document.querySelectorAll('.dashboard-section');
+                let analyticsDataFetched = false;
 
-                function showSection(sectionId) {
-                    sections.forEach(section => {
-                        section.style.display = section.id === sectionId ? 'block' : 'none';
+                const switchSection = (sectionId) => {
+                    // Hide all sections
+                    dashboardSections.forEach(section => {
+                        section.style.display = 'none';
                     });
 
-                    buttons.forEach(button => {
-                        if (button.dataset.section === sectionId) {
-                            button.classList.add('active');
-                        } else {
-                            button.classList.remove('active');
-                        }
-                    });
-
-                    // Show/hide stats based on section
-                    if (sectionId === 'analytics-reporting') {
-                        statsContainer.style.display = 'none';
-                    } else {
-                        statsContainer.style.display = 'grid'; // 'grid' to restore its layout
+                    // Show the target section
+                    const sectionToShow = document.getElementById(sectionId);
+                    if (sectionToShow) {
+                        sectionToShow.style.display = 'block';
                     }
-                }
 
-                buttons.forEach(button => {
+                    // Fetch analytics data if needed
+                    if (sectionId === 'analytics-reporting' && !analyticsDataFetched) {
+                        fetchAndRenderAdminAnalytics();
+                    }
+                };
+
+                sidebarButtons.forEach(button => {
                     button.addEventListener('click', () => {
-                        showSection(button.dataset.section);
+                        const sectionId = button.dataset.section;
+                        switchSection(sectionId);
+
+                        // Update active state for buttons
+                        sidebarButtons.forEach(btn => btn.classList.remove('active'));
+                        button.classList.add('active');
                     });
                 });
-                
-                const userMenuButton = document.getElementById('user-menu-button');
-                const userMenu = document.getElementById('user-menu');
 
-                if(userMenuButton) {
-                    userMenuButton.addEventListener('click', () => {
-                        userMenu.classList.toggle('hidden');
-                    });
-
-                    window.addEventListener('click', (e) => {
-                        if (!userMenuButton.contains(e.target) && !userMenu.contains(e.target)) {
-                            userMenu.classList.add('hidden');
+                const fetchAndRenderAdminAnalytics = async () => {
+                    try {
+                        const response = await fetch('/analytics');
+                        if (!response.ok) {
+                            throw new Error(`Network response was not ok: ${response.statusText}`);
                         }
-                    });
-                }
+                        const data = await response.json();
+                        analyticsDataFetched = true;
 
-                // Show the first section by default
-                showSection('all-projects');
+                        // User Registrations Chart
+                        new Chart(document.getElementById('userRegistrationsChart'), {
+                            type: 'bar',
+                            data: {
+                                labels: data.userRegistrations.labels,
+                                datasets: [{
+                                    label: 'New Users',
+                                    data: data.userRegistrations.data,
+                                    backgroundColor: 'rgba(59, 130, 246, 0.5)',
+                                    borderColor: 'rgba(59, 130, 246, 1)',
+                                    borderWidth: 1
+                                }]
+                            },
+                            options: {
+                                scales: { y: { beginAtZero: true, ticks: { stepSize: 1 } } }
+                            }
+                        });
+
+                        // Projects by Industry Chart
+                        new Chart(document.getElementById('projectsByIndustryChart'), {
+                            type: 'doughnut',
+                            data: {
+                                labels: data.projectsByIndustry.labels,
+                                datasets: [{
+                                    data: data.projectsByIndustry.data,
+                                    backgroundColor: ['#FF6384', '#36A2EB', '#FFCE56', '#4BC0C0', '#9966FF', '#FF9F40']
+                                }]
+                            },
+                            options: { responsive: true, plugins: { legend: { position: 'top' } } }
+                        });
+
+                        // Application Status Chart (in Analytics section)
+                        const applicationStatusCtx = document.getElementById('applicationStatusChart');
+                        if (applicationStatusCtx) {
+                            new Chart(applicationStatusCtx, {
+                                type: 'pie',
+                                data: {
+                                    labels: data.applicationStatus.labels,
+                                    datasets: [{
+                                        data: data.applicationStatus.data,
+                                        backgroundColor: ['#FF9F40', '#4BC0C0', '#FF6384']
+                                    }]
+                                },
+                                options: {
+                                    responsive: true,
+                                    plugins: {
+                                        legend: {
+                                            position: 'top',
+                                        }
+                                    }
+                                }
+                            });
+                        }
+
+                        // Funding Activity Chart
+                        new Chart(document.getElementById('fundingActivityChart'), {
+                            type: 'line',
+                            data: {
+                                labels: data.fundingActivity.labels,
+                                datasets: [{
+                                    label: 'Funding Amount (USD)',
+                                    data: data.fundingActivity.data,
+                                    borderColor: 'rgba(54, 162, 235, 1)',
+                                    backgroundColor: 'rgba(54, 162, 235, 0.2)',
+                                    fill: true,
+                                    tension: 0.1
+                                }]
+                            },
+                            options: {
+                                scales: {
+                                    y: {
+                                        beginAtZero: true,
+                                        ticks: { callback: (value) => '$' + value.toLocaleString() }
+                                    }
+                                },
+                                plugins: {
+                                    tooltip: {
+                                        callbacks: {
+                                            label: (context) => {
+                                                let label = context.dataset.label || '';
+                                                if (label) label += ': ';
+                                                if (context.parsed.y !== null) {
+                                                    label += new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(context.parsed.y);
+                                                }
+                                                return label;
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        });
+
+                    } catch (error) {
+                        console.error('Failed to fetch admin analytics:', error);
+                        const analyticsContainer = document.getElementById('analytics-reporting');
+                        if(analyticsContainer) analyticsContainer.innerHTML = '<p class="text-red-500">Could not load analytics data.</p>';
+                    }
+                };
+
+                // Set initial state
+                const initialSection = 'all-projects';
+                document.querySelector(`.sidebar-button[data-section="${initialSection}"]`).classList.add('active');
+                switchSection(initialSection);
             });
         </script>
 
@@ -238,7 +331,7 @@
                             <p class="text-green-500 text-xs mt-1">+5 this week</p>
                         </div>
                         <div class="bg-purple-100 p-3 rounded-xl">
-                           <svg class="w-5 h-5 text-purple-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M15 21a6 6 0 00-9-5.197m0 0A5.975 5.975 0 0112 13a5.975 5.975 0 013 1.803M15 21a9 9 0 00-3-5.647" /></svg>
+                           <svg class="w-5 h-5 text-purple-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M15 21a9 9 0 00-3-5.647" /></svg>
                         </div>
                     </div>
 
@@ -297,7 +390,7 @@
                     <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
                         <!-- Funding Overview Card -->
                         <div class="bg-white rounded-xl shadow-md p-8">
-                            <h3 class="text-xl font-bold text-gray-800">Funding Overview</h3>
+                            <h3 class="text-xl font-bold text-gray-900">Funding Overview</h3>
                             <p class="text-sm text-gray-500 mb-6">Track your fundraising progress</p>
                             <div id="funding-overview-container" class="space-y-6">
                                 <p class="text-gray-500">Loading funding data...</p>
@@ -306,7 +399,7 @@
 
                         <!-- Application Trends Card -->
                         <div class="bg-white rounded-xl shadow-md p-8">
-                            <h3 class="text-xl font-bold text-gray-800">Application Trends</h3>
+                            <h3 class="text-xl font-bold text-gray-900">Application Trends</h3>
                             <p class="text-sm text-gray-500 mb-6">Applications received over time</p>
                             <div id="application-trends-container" class="space-y-4">
                                 <div class="flex justify-between items-center">
@@ -332,33 +425,214 @@
                 </div>
             </main>
         <% } else if (role === 'investor') { %>
-            <h2 class="text-2xl font-bold text-gray-900 mb-6">Investment Opportunities</h2>
-            <% if (projects && projects.length > 0) { %>
-                <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
-                    <% projects.forEach(project => { %>
-                        <%- include('../partials/projectCard', { project: project }) %>
-                    <% }); %>
+            <main class="flex-1 bg-gray-50 p-6 md:p-8">
+                <!-- Welcome Header -->
+                <div class="mb-8">
+                    <h1 class="text-3xl font-bold text-gray-900">Welcome back, <%= user.name.split(' ')[0] %>!</h1>
+                    <p class="text-lg text-gray-600 mt-1">Track your investments and discover promising startups to fund.</p>
                 </div>
-            <% } else { %>
-                <div class="bg-white rounded-xl border border-gray-200 p-8 text-center">
-                    <h3 class="text-xl font-semibold text-gray-800 mb-2">No Projects Found</h3>
-                    <p class="text-gray-500">There are currently no projects seeking investment.</p>
+
+                <!-- Stats Cards -->
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+                    <!-- Total Invested Card -->
+                    <div class="bg-white p-6 rounded-xl border border-gray-200 flex items-center justify-between">
+                        <div>
+                            <p class="text-sm font-medium text-gray-500">Total Invested</p>
+                            <p class="text-3xl font-bold text-gray-900 mt-1">Ksh<%= (stats.totalInvested || 0).toLocaleString() %></p>
+                            <p class="text-sm text-gray-500 mt-1">Across <%= (stats.totalDeals || 0) %> companies</p>
+                        </div>
+                        <div class="bg-blue-100 p-3 rounded-lg">
+                            <svg class="w-6 h-6 text-blue-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M21 12a2.25 2.25 0 00-2.25-2.25H5.25A2.25 2.25 0 003 12m18 0v6a2.25 2.25 0 01-2.25 2.25H5.25A2.25 2.25 0 013 18v-6m18 0V9M3 12V9m18 0a2.25 2.25 0 00-2.25-2.25H5.25A2.25 2.25 0 013 9m18 0V6a2.25 2.25 0 00-2.25-2.25H5.25A2.25 2.25 0 013 6v3" /></svg>
+                        </div>
+                    </div>
+                    <!-- Active Deals Card -->
+                    <div class="bg-white p-6 rounded-xl border border-gray-200 flex items-center justify-between">
+                        <div>
+                            <p class="text-sm font-medium text-gray-500">Active Deals</p>
+                            <p class="text-3xl font-bold text-gray-900 mt-1"><%= stats.activeDeals || 0 %></p>
+                            <p class="text-sm text-gray-500 mt-1">Under review</p>
+                        </div>
+                        <div class="bg-yellow-100 p-3 rounded-lg">
+                            <svg class="w-6 h-6 text-yellow-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M2.25 18.75a60.07 60.07 0 0115.797 2.101c.727.198 1.453-.342 1.453-1.096V18.75M3.75 4.5v.75A.75.75 0 013 6h-.75m0 0v-.75A.75.75 0 013 4.5h.75m0 0h.75A.75.75 0 015.25 6v.75m0 0v.75A.75.75 0 014.5 7.5h-.75m0 0H3.75A.75.75 0 013 6.75v-.75m0 0V6A.75.75 0 013.75 5.25h.75M15 11.25a3 3 0 11-6 0 3 3 0 016 0z" /></svg>
+                        </div>
+                    </div>
                 </div>
-            <% } %>
+
+                <!-- Tab Navigation -->
+                <div class="border-b border-gray-200 mb-6">
+                    <nav class="-mb-px flex space-x-8" aria-label="Tabs" id="investor-tabs">
+                        <a href="#" data-tab="opportunities" class="tab-item whitespace-nowrap py-3 px-4 border-b-2 border-primary font-semibold text-primary text-sm">
+                            Opportunities
+                        </a>
+                        <a href="#" data-tab="portfolio" class="tab-item whitespace-nowrap py-3 px-4 border-b-2 border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 font-medium text-sm">
+                            Portfolio
+                        </a>
+                        <a href="#" data-tab="analytics" class="tab-item whitespace-nowrap py-3 px-4 border-b-2 border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 font-medium text-sm">
+                            Analytics
+                        </a>
+                    </nav>
+                </div>
+
+                <!-- Tab Content -->
+                <div id="opportunities-content" class="tab-panel">
+                    <h2 class="text-2xl font-bold text-gray-900 mb-6">Investment Opportunities</h2>
+                    <% if (projects && projects.length > 0) { %>
+                        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                            <% projects.forEach(project => { %>
+                                <%- include('../partials/investmentCard', { project: project }) %>
+                            <% }); %>
+                        </div>
+                    <% } else { %>
+                        <div class="text-center py-12">
+                            <p class="text-gray-500">No investment opportunities available at the moment.</p>
+                        </div>
+                    <% } %>
+                </div>
+
+                <div id="portfolio-content" class="tab-panel hidden">
+                    <h2 class="text-2xl font-bold text-gray-900 mb-6">My Portfolio</h2>
+                    <% if (portfolio && portfolio.length > 0) { %>
+                        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                            <% portfolio.forEach(project => { %>
+                                <%- include('../partials/investmentCard', { project: project }) %>
+                            <% }); %>
+                        </div>
+                    <% } else { %>
+                        <div class="text-center py-12">
+                            <p class="text-gray-500">You haven't invested in any projects yet.</p>
+                        </div>
+                    <% } %>
+                </div>
+
+                <div id="analytics-content" class="tab-panel hidden">
+                    <h2 class="text-2xl font-bold text-gray-900 mb-6">Portfolio Analytics</h2>
+                    <% 
+                        const sectorColors = {
+                            'FinTech': 'bg-blue-600',
+                            'CleanTech': 'bg-green-500',
+                            'HealthTech': 'bg-purple-600',
+                            'AI': 'bg-red-500',
+                            'SaaS': 'bg-yellow-500',
+                            'E-commerce': 'bg-pink-500',
+                            'EdTech': 'bg-indigo-500',
+                        };
+                        const defaultColor = 'bg-gray-400';
+                    %>
+                    <% if (analytics && analytics.sectorAllocation && analytics.sectorAllocation.length > 0) { %>
+                        <div class="bg-white p-6 rounded-xl border border-gray-200">
+                            <h3 class="text-xl font-bold text-gray-900">Sector Allocation</h3>
+                            <p class="text-gray-600 mt-1 mb-6">Distribution of investments by sector</p>
+                            <div class="space-y-4">
+                                <% analytics.sectorAllocation.forEach(item => { %>
+                                    <div>
+                                        <div class="flex justify-between items-center mb-1">
+                                            <span class="text-base font-medium text-gray-700"><%= item.sector %></span>
+                                            <span class="text-base font-medium text-gray-700"><%= item.percentage %>%</span>
+                                        </div>
+                                        <div class="w-full bg-gray-200 rounded-full h-2.5">
+                                            <div class="<%= sectorColors[item.sector] || defaultColor %> h-2.5 rounded-full" style="width: <%= item.percentage %>%;"></div>
+                                        </div>
+                                    </div>
+                                <% }); %>
+                            </div>
+                        </div>
+                    <% } else { %>
+                        <div class="text-center py-12 bg-white rounded-xl border border-gray-200">
+                            <h3 class="text-xl font-semibold text-gray-800 mb-2">No Analytics Data</h3>
+                    <% } %>
+                </div>
+            </main>
         <% } else if (role === 'collaborator') { %>
-            <h2 class="text-2xl font-bold text-gray-900 mb-6">Collaboration Opportunities</h2>
-            <% if (projects && projects.length > 0) { %>
-                <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
-                    <% projects.forEach(project => { %>
-                        <%- include('../partials/projectCard', { project: project }) %>
-                    <% }); %>
+            <main class="flex-1 p-6 md:p-8">
+                <!-- Collaborator Header -->
+                <div class="mb-8">
+                    <h1 class="text-3xl font-bold text-gray-900">Welcome, <%= user.name %>!</h1>
+                    <p class="text-lg text-gray-600">Here's your collaboration dashboard.</p>
                 </div>
-            <% } else { %>
-                <div class="bg-white rounded-xl border border-gray-200 p-8 text-center">
-                    <h3 class="text-xl font-semibold text-gray-800 mb-2">No Projects Found</h3>
-                    <p class="text-gray-500">Check back later for new collaboration opportunities.</p>
+
+                <!-- Collaborator Stats -->
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+                    <div class="bg-white p-6 rounded-xl border border-gray-200">
+                        <h3 class="text-lg font-semibold text-gray-800">Active Projects</h3>
+                        <p class="text-3xl font-bold text-gray-900"><%= stats.activeProjects %></p>
+                    </div>
+                    <div class="bg-white p-6 rounded-xl border border-gray-200">
+                        <h3 class="text-lg font-semibold text-gray-800">Total Projects</h3>
+                        <p class="text-3xl font-bold text-gray-900"><%= stats.totalProjects %></p>
+                    </div>
                 </div>
-            <% } %>
+
+                <!-- My Projects Section -->
+                <div>
+                    <h2 class="text-2xl font-bold text-gray-900 mb-6">My Projects</h2>
+                    <% if (myProjects && myProjects.length > 0) { %>
+                        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                            <% myProjects.forEach(project => { %>
+                                <%- include('../partials/projectCard', { project: project, role: role }) %>
+                            <% }); %>
+                        </div>
+                    <% } else { %>
+                        <div class="text-center py-12 bg-white rounded-xl border border-gray-200">
+                            <p class="text-gray-500">You haven't joined any projects yet. Explore opportunities below!</p>
+                        </div>
+                    <% } %>
+                </div>
+
+                <!-- My Applications Section -->
+                <div class="mt-12">
+                    <h2 class="text-2xl font-bold text-gray-900 mb-6">My Applications</h2>
+                    <% if (myApplications && myApplications.length > 0) { %>
+                        <div class="bg-white rounded-xl border border-gray-200 overflow-hidden">
+                            <table class="min-w-full divide-y divide-gray-200">
+                                <thead class="bg-gray-50">
+                                    <tr>
+                                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Project</th>
+                                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Date Applied</th>
+                                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+                                    </tr>
+                                </thead>
+                                <tbody class="bg-white divide-y divide-gray-200">
+                                    <% myApplications.forEach(application => { %>
+                                        <tr>
+                                            <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900"><%= application.projectName %></td>
+                                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500"><%= new Date(application.createdAt).toLocaleDateString() %></td>
+                                            <td class="px-6 py-4 whitespace-nowrap text-sm">
+                                                <% if (application.status === 'Accepted') { %>
+                                                    <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">Accepted</span>
+                                                <% } else if (application.status === 'Rejected') { %>
+                                                    <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-red-100 text-red-800">Rejected</span>
+                                                <% } else { %>
+                                                    <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-yellow-100 text-yellow-800">Pending</span>
+                                                <% } %>
+                                            </td>
+                                        </tr>
+                                    <% }); %>
+                                </tbody>
+                            </table>
+                        </div>
+                    <% } else { %>
+                        <div class="text-center py-12 bg-white rounded-xl border border-gray-200">
+                            <p class="text-gray-500">You have not applied to any projects yet.</p>
+                        </div>
+                    <% } %>
+                </div>
+
+                <!-- Explore Opportunities Section -->
+                <div class="mt-12">
+                    <h2 class="text-2xl font-bold text-gray-900 mb-6">Explore Opportunities</h2>
+                    <% if (opportunities && opportunities.length > 0) { %>
+                        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                            <% opportunities.forEach(project => { %>
+                                <%- include('../partials/projectCard', { project: project, role: role }) %>
+                            <% }); %>
+                        </div>
+                    <% } else { %>
+                        <div class="text-center py-12 bg-white rounded-xl border border-gray-200">
+                            <p class="text-gray-500">No new collaboration opportunities available at the moment.</p>
+                        </div>
+                    <% } %>
+                </div>
+            </main>
         <% } %>
 
 
@@ -462,7 +736,7 @@
                                     <span class="font-semibold text-gray-600">${project.percentage.toFixed(1)}%</span>
                                 </div>
                                 <div class="w-full bg-gray-200 rounded-full h-2">
-                                    <div class="bg-purple-600 h-2 rounded-full" style="width: ${project.percentage}%"></div>
+                                    <div class="bg-primary h-2 rounded-full" style="width: ${project.percentage}%"></div>
                                 </div>
                             </div>
                         `;

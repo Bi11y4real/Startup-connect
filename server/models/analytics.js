@@ -4,6 +4,7 @@ const { collection, getDocs, query, where, Timestamp } = require('firebase/fires
 const USERS_COLLECTION = 'users';
 const PROJECTS_COLLECTION = 'projects';
 const APPLICATIONS_COLLECTION = 'applications';
+const Investment = require('./investment'); // Import the new Investment model
 
 class Analytics {
     /**
@@ -133,20 +134,27 @@ class Analytics {
     }
 
     /**
-     * Fetches funding activity for the last 12 months.
-     * NOTE: This is a placeholder. A real implementation would require an 'investments'
-     * collection with timestamps to track when funding was received.
+     * Fetches funding activity for the last 30 days.
      */
     static async getFundingActivity() {
         try {
+            const activity = await Investment.getFundingActivity(30);
+
             const labels = [];
             const data = [];
-            const now = new Date();
-            for (let i = 11; i >= 0; i--) {
-                const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
-                labels.push(d.toLocaleString('default', { month: 'short' }) + ' ' + d.getFullYear().toString().slice(-2));
-                data.push(0); // Placeholder data, as we are not tracking investment dates
+            
+            // Create a map of dates for quick lookup
+            const activityMap = new Map(activity.map(item => [item.date, item.amount]));
+
+            // Generate labels for the last 30 days
+            for (let i = 29; i >= 0; i--) {
+                const d = new Date();
+                d.setDate(d.getDate() - i);
+                const dateString = d.toISOString().split('T')[0];
+                labels.push(dateString);
+                data.push(activityMap.get(dateString) || 0);
             }
+
             return { labels, data };
         } catch (error) {
             console.error('Error getting funding activity:', error);
@@ -198,104 +206,7 @@ class Analytics {
      * Fetches application trends for all projects belonging to a founder.
      * @param {string} founderId - The ID of the founder.
      */
-    static async getApplicationTrends(founderId) {
-        const projectsQuery = query(collection(db, PROJECTS_COLLECTION), where('founderId', '==', founderId));
-        const projectsSnapshot = await getDocs(projectsQuery);
-        const projectIds = projectsSnapshot.docs.map(doc => doc.id);
 
-        if (projectIds.length === 0) {
-            return {
-                thisWeek: 0,
-                lastWeek: 0,
-                thisMonth: 0,
-                growthRate: 0
-            };
-        }
-
-        const applicationsQuery = query(collection(db, APPLICATIONS_COLLECTION), where('projectId', 'in', projectIds));
-        const applicationsSnapshot = await getDocs(applicationsQuery);
-
-        const now = new Date();
-        const today = now.getDay(); // 0=Sunday, 1=Monday, ...
-        const startOfWeek = new Date(now.getFullYear(), now.getMonth(), now.getDate() - today);
-        startOfWeek.setHours(0, 0, 0, 0);
-
-        const startOfLastWeek = new Date(new Date().setDate(startOfWeek.getDate() - 7));
-        const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
-
-        let thisWeekCount = 0;
-        let lastWeekCount = 0;
-        let thisMonthCount = 0;
-
-        applicationsSnapshot.forEach(doc => {
-            const app = doc.data();
-            const createdAt = app.createdAt.toDate();
-
-            if (createdAt >= startOfMonth) {
-                thisMonthCount++;
-            }
-            if (createdAt >= startOfWeek) {
-                thisWeekCount++;
-            } else if (createdAt >= startOfLastWeek) {
-                lastWeekCount++;
-            }
-        });
-
-        const growthRate = lastWeekCount > 0 
-            ? Math.round(((thisWeekCount - lastWeekCount) / lastWeekCount) * 100)
-            : (thisWeekCount > 0 ? 100 : 0);
-
-        return {
-            thisWeek: thisWeekCount,
-            lastWeek: lastWeekCount,
-            thisMonth: thisMonthCount,
-            growthRate
-        };
-    }
-    /**
-     * Fetches all analytics data for a specific founder's dashboard.
-     * @param {string} founderId - The ID of the founder.
-     */
-    static async getFounderAnalytics(founderId) {
-        try {
-            const [fundingOverview, applicationTrends] = await Promise.all([
-                this.getFundingOverview(founderId),
-                this.getApplicationTrends(founderId)
-            ]);
-
-            return { fundingOverview, applicationTrends };
-        } catch (error) {
-            console.error(`Error getting founder analytics for ${founderId}:`, error);
-            throw error;
-        }
-    }
-
-    /**
-     * Fetches funding overview for all projects belonging to a founder.
-     * @param {string} founderId - The ID of the founder.
-     */
-    static async getFundingOverview(founderId) {
-        const projectsQuery = query(collection(db, PROJECTS_COLLECTION), where('founderId', '==', founderId));
-        const projectsSnapshot = await getDocs(projectsQuery);
-
-        const fundingData = projectsSnapshot.docs.map(doc => {
-            const project = doc.data();
-            const fundingRaised = project.fundingRaised || 0;
-            const fundingGoal = project.fundingGoal || 1; // Avoid division by zero
-            const percentage = Math.round((fundingRaised / fundingGoal) * 100);
-            return {
-                title: project.title,
-                percentage
-            };
-        });
-
-        return fundingData;
-    }
-
-    /**
-     * Fetches application trends for all projects belonging to a founder.
-     * @param {string} founderId - The ID of the founder.
-     */
     static async getApplicationTrends(founderId) {
         const projectsQuery = query(collection(db, PROJECTS_COLLECTION), where('founderId', '==', founderId));
         const projectsSnapshot = await getDocs(projectsQuery);

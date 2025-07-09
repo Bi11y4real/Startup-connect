@@ -7,6 +7,7 @@ const {
     setDoc,
     updateDoc,
     query,
+    where,
     orderBy,
     serverTimestamp
 } = require('firebase/firestore');
@@ -101,6 +102,53 @@ class Application {
             return applications;
         } catch (error) {
             console.error('Error getting all applications:', error);
+            throw error;
+        }
+    }
+
+    static async getApplicationsByUserId(userId) {
+        try {
+            const q = query(
+                collection(db, COLLECTION_NAME),
+                where('userId', '==', userId),
+                orderBy('createdAt', 'desc')
+            );
+            const querySnapshot = await getDocs(q);
+
+            const applications = await Promise.all(querySnapshot.docs.map(async (doc) => {
+                const app = doc.data();
+                let projectName = 'Unknown Project';
+
+                // Fetch project name
+                try {
+                    if (app.projectId) {
+                        const project = await Project.getById(app.projectId);
+                        if (project) {
+                            projectName = project.title;
+                        }
+                    }
+                } catch (projectError) {
+                    console.error(`Failed to fetch project ${app.projectId} for application ${doc.id}`, projectError);
+                }
+
+                // Convert timestamps
+                if (app.createdAt) {
+                    app.createdAt = app.createdAt.toDate();
+                }
+                if (app.updatedAt) {
+                    app.updatedAt = app.updatedAt.toDate();
+                }
+
+                return {
+                    id: doc.id,
+                    ...app,
+                    projectName,
+                };
+            }));
+
+            return applications;
+        } catch (error) {
+            console.error('Error getting applications by user ID:', error);
             throw error;
         }
     }
